@@ -1,0 +1,21 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cyberiantiger.minecraft.duckchat.command;
+
+/**
+ *
+ * @author antony
+ */
+public class PermissionException extends SubCommandException {
+    private final String permission;
+
+    public PermissionException(String permission) {
+        this.permission = permission;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+}

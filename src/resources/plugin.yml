@@ -1,0 +1,46 @@
+name: "DuckChat"
+version: "${version}-${project.build.number}"
+main: "org.cyberiantiger.minecraft.duckchat.Main"
+website: "http://dev.bukkit.org/server-mods/duckchat/"
+softdepends:
+        - Vault
+commands:
+  duckchat:
+    description: The main DuckChat command.
+    usage: /<command> channels|channel|chlist|part|join|me|msg|reply|reload
+    aliases:
+            - dc
+            - channels
+            - channel
+            - channellist
+            - chlist
+            - part
+            - join
+            - me
+            - m
+            - msg
+            - r
+            - reply
+            - dcreload
+permissions:
+        duckchat.channels:
+                default: true
+                description: Allow usage of the channels command.
+        duckchat.channel:
+                default: true
+                description: Allow usage of the channel command.
+        duckchat.join:
+                default: true
+                description: Allow usage of the join command.
+        duckchat.part:
+                default: true
+                description: Allow usage of the part command.
+        duckchat.me:
+                default: true
+                description: Allow usage of the me command.
+        duckchat.message:
+                default: true
+                description: Allow usage of the message command.
+        duckchat.reply:
+                default: true
+                description: Allow usage of the reply command.
