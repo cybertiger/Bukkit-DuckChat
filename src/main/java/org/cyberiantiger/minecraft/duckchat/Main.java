@@ -318,6 +318,7 @@ public class Main extends JavaPlugin implements Listener {
             if (channels.containsKey(name)) {
                 // TODO: Only warn for creating duplicate and different channels.
                 getLogger().log(Level.WARNING, "Tried to create duplicate channel: {0}", name);
+                updateChannel(name, messageFormat, actionFormat, flags, permission);
                 return;
             }
             ChatChannel chatChannel = new ChatChannel(owner, name, messageFormat, actionFormat, flags, permission);
@@ -340,7 +341,7 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    void updateChannel(String name, String messageFormat, String actionFormat, BitSet flags, String permission) {
+    void updateChannel(String name, String messageFormat, String actionFormat, BitSet flags, final String permission) {
         synchronized (STATE_LOCK) {
             if (!channels.containsKey(name)) {
                 getLogger().log(Level.WARNING, "Tried to modify non existant channel: {0}", name);
@@ -351,6 +352,21 @@ public class Main extends JavaPlugin implements Listener {
             chatChannel.setActionFormat(actionFormat);
             chatChannel.setFlags(flags);
             chatChannel.setPermission(permission);
+        }
+        if (registerPermissions) {
+            // Run at a later time, we don't care when.
+            getServer().getScheduler().runTask(this, new Runnable() {
+
+                @Override
+                public void run() {
+                    Permission perm = getServer().getPluginManager().getPermission(permission);
+                    if (perm == null) {
+                        Permission permObj = new Permission(permission, null, PermissionDefault.OP);
+                        getServer().getPluginManager().addPermission(permObj);
+                        permObj.recalculatePermissibles();
+                    }
+                }
+            });
         }
     }
 
