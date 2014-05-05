@@ -39,7 +39,6 @@ public class DuckReceiver extends ReceiverAdapter {
     public void receive(Message msg) {
         Address src = msg.getSrc();
         Data data = (Data) msg.getObject();
-        plugin.getLogger().log(Level.INFO, "Received message from: {0} {1}", new Object[]{src, data});
         switch (data.getType()) {
             case MEMBER_CREATE:
                 MemberCreateData memberCreateData = (MemberCreateData) data;
@@ -86,20 +85,17 @@ public class DuckReceiver extends ReceiverAdapter {
 
     @Override
     public void setState(InputStream input) throws Exception {
-        plugin.getLogger().info("Setting state");
         plugin.setState(input);
     }
 
     @Override
     public void getState(OutputStream output) throws Exception {
-        plugin.getLogger().info("Getting state");
         plugin.getState(output);
     }
 
     @Override
     public void viewAccepted(View view) {
         // TODO: Netsplit - this only deals with the naive case of a single node joining.
-        plugin.getLogger().log(Level.INFO, "view accepted: {0}", view.toString());
         plugin.viewUpdated(view.getMembers());
     }
 }

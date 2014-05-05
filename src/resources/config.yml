@@ -50,7 +50,18 @@ channels:
 #                globalAutoJoin: false
 #                permission: some.permission
 
-
+# Example irc bridge.
+#
+#irc-bridges:
+#        - nickname: 'DuckChat'
+#          server: 'server.com'
+#          port: 6667
+#          serverpass: ''
+#          ssl: false
+#
+#          channels:
+#                global: #matecaft
+                
 messages:
         chat:
                 nochannel: 'Your current channel is invalid.'

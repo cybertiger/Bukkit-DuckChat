@@ -45,6 +45,8 @@ import org.cyberiantiger.minecraft.duckchat.command.ReplySubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.command.UsageException;
+import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
+import org.cyberiantiger.minecraft.duckchat.irc.IRCLink;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelCreateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelJoinData;
 import org.cyberiantiger.minecraft.duckchat.message.MemberCreateData;
@@ -70,6 +72,7 @@ public class Main extends JavaPlugin implements Listener {
     private String defaultChannel;
     private Chat vaultChat;
 
+    private final List<IRCLink> ircLinks = new ArrayList();
 
     // Players, and their current state.
     private final Map<String,PlayerState> playerStates = new HashMap<String, PlayerState>();
@@ -126,7 +129,41 @@ public class Main extends JavaPlugin implements Listener {
                 sendJoinChannel(player, channelName);
             }
         }
-        
+
+        if (config.isConfigurationSection("irc-bridges")) {
+            ConfigurationSection bridgesSection = config.getConfigurationSection("irc-bridges");
+            for (String key : bridgesSection.getKeys(false)) {
+                if (!bridgesSection.isConfigurationSection(key)) {
+                    continue;
+                }
+                ConfigurationSection bridgeSection = bridgesSection.getConfigurationSection(key);
+                boolean useSsl = bridgeSection.getBoolean("ssl", false);
+                String host = bridgeSection.getString("host", "localhost");
+                int port = bridgeSection.getInt("port", 6667);
+                String password = bridgeSection.getString("password", "");
+                String nick = bridgeSection.getString("nick", "DuckChat");
+                String username = bridgeSection.getString("username", "bot");
+                String realm = bridgeSection.getString("realm", "localhost");
+                String format = bridgeSection.getString("format", "<%s> %s");
+
+                IRCLink ircLink = new IRCLink(this, useSsl, host, port, password, nick, username, realm, format);
+
+                if (bridgeSection.isConfigurationSection("channels")) {
+                    ConfigurationSection bridgeChannelSection = bridgeSection.getConfigurationSection("channels");
+                    for (String duckChannel : bridgeChannelSection.getKeys(false)) {
+                        if (bridgeChannelSection.isString(duckChannel)) {
+                            ircLink.addChannel(duckChannel, bridgeChannelSection.getString(duckChannel));
+                        }
+                    }
+                }
+                try {
+                    ircLink.connect();
+                    ircLinks.add(ircLink);
+                } catch (IOException ex) {
+                    getLogger().log(Level.WARNING, "Error connecting to IRC", ex);
+                }
+            }
+        }
     }
 
     private void disconnect() {
@@ -134,6 +171,14 @@ public class Main extends JavaPlugin implements Listener {
             channel.close();
             channel = null;
         }
+        for (IRCLink ircLink : ircLinks) {
+            try {
+                ircLink.disconnect();
+            } catch (IOException ex) {
+                getLogger().log(Level.WARNING, null, ex);
+            }
+        }
+        ircLinks.clear();
         members.clear();
         channels.clear();
     }
@@ -324,21 +369,7 @@ public class Main extends JavaPlugin implements Listener {
             ChatChannel chatChannel = new ChatChannel(owner, name, messageFormat, actionFormat, flags, permission);
             channels.put(name, chatChannel);
         }
-        if (registerPermissions) {
-            // Run at a later time, we don't care when.
-            getServer().getScheduler().runTask(this, new Runnable() {
-
-                @Override
-                public void run() {
-                    Permission perm = getServer().getPluginManager().getPermission(permission);
-                    if (perm == null) {
-                        Permission permObj = new Permission(permission, null, PermissionDefault.OP);
-                        getServer().getPluginManager().addPermission(permObj);
-                        permObj.recalculatePermissibles();
-                    }
-                }
-            });
-        }
+        registerPermission(permission);
     }
 
     void updateChannel(String name, String messageFormat, String actionFormat, BitSet flags, final String permission) {
@@ -353,21 +384,7 @@ public class Main extends JavaPlugin implements Listener {
             chatChannel.setFlags(flags);
             chatChannel.setPermission(permission);
         }
-        if (registerPermissions) {
-            // Run at a later time, we don't care when.
-            getServer().getScheduler().runTask(this, new Runnable() {
-
-                @Override
-                public void run() {
-                    Permission perm = getServer().getPluginManager().getPermission(permission);
-                    if (perm == null) {
-                        Permission permObj = new Permission(permission, null, PermissionDefault.OP);
-                        getServer().getPluginManager().addPermission(permObj);
-                        permObj.recalculatePermissibles();
-                    }
-                }
-            });
-        }
+        registerPermission(permission);
     }
 
     void deleteChannel(String name) {
@@ -413,6 +430,7 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     void messageChannel(String channel, String identifier, String message) {
+        getServer().getPluginManager().callEvent(new ChannelMessageEvent(identifier, channel, message));
         synchronized (STATE_LOCK) {
             ChatChannel chatChannel = channels.get(channel);
             Address localAddress = getLocalAddress();
@@ -441,6 +459,26 @@ public class Main extends JavaPlugin implements Listener {
 
     public Address getLocalAddress() {
         return channel.getAddress();
+    }
+
+    public void registerPermission(final String permission) {
+        if (!registerPermissions)
+            return;
+        if (permission == null)
+            return;
+        // Run at a later time, we don't care when.
+        getServer().getScheduler().runTask(this, new Runnable() {
+            
+            @Override
+            public void run() {
+                Permission perm = getServer().getPluginManager().getPermission(permission);
+                if (perm == null) {
+                    Permission permObj = new Permission(permission, null, PermissionDefault.OP);
+                    getServer().getPluginManager().addPermission(permObj);
+                    permObj.recalculatePermissibles();
+                }
+            }
+        });
     }
 
     public List<String> getPlayerCompletions(String toComplete) {
@@ -732,36 +770,30 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public boolean sendChannelAction(Player player, String channelName, String action) {
-        try {
-            String format;
-            synchronized(STATE_LOCK) {
-                ChatChannel chatChannel = channels.get(channelName);
-                if (chatChannel == null) {
-                    player.sendMessage(translate("chat.nochannel"));
-                    return false;
-                }
-                if (!chatChannel.isMember(getIdentifier(player))) {
-                    player.sendMessage(translate("chat.nochannel"));
-                    return false;
-                }
-                format = chatChannel.getActionFormat();
+        String format;
+        synchronized(STATE_LOCK) {
+            ChatChannel chatChannel = channels.get(channelName);
+            if (chatChannel == null) {
+                player.sendMessage(translate("chat.nochannel"));
+                return false;
             }
-            action = String.format(
-                    format,
-                    channelName,
-                    channel.getName(),
-                    player.getWorld().getName(),
-                    player.getName(),
-                    getPrefix(player),
-                    player.getDisplayName(),
-                    getSuffix(player),
-                    action);
-            channel.send(null, new ChannelMessageData(getIdentifier(player), channelName, action));
-            return true;
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
+            if (!chatChannel.isMember(getIdentifier(player))) {
+                player.sendMessage(translate("chat.nochannel"));
+                return false;
+            }
+            format = chatChannel.getActionFormat();
         }
-        return false;
+        action = String.format(
+                format,
+                channelName,
+                channel.getName(),
+                player.getWorld().getName(),
+                player.getName(),
+                getPrefix(player),
+                player.getDisplayName(),
+                getSuffix(player),
+                action);
+        return sendChannelMessage(getIdentifier(player), channelName, action);
     }
 
     public boolean sendChannelMessage(Player player, String message) {
@@ -774,31 +806,35 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public boolean sendChannelMessage(Player player, String channelName, String message) {
-        try {
-            String format;
-            synchronized(STATE_LOCK) {
-                ChatChannel chatChannel = channels.get(channelName);
-                if (chatChannel == null) {
-                    player.sendMessage(translate("chat.nochannel"));
-                    return false;
-                }
-                if (!chatChannel.isMember(getIdentifier(player))) {
-                    player.sendMessage(translate("chat.nochannel"));
-                    return false;
-                }
-                format = chatChannel.getMessageFormat();
+        String format;
+        synchronized(STATE_LOCK) {
+            ChatChannel chatChannel = channels.get(channelName);
+            if (chatChannel == null) {
+                player.sendMessage(translate("chat.nochannel"));
+                return false;
             }
-            message = String.format(
-                    format,
-                    channelName,
-                    channel.getName(),
-                    player.getWorld().getName(),
-                    player.getName(),
-                    getPrefix(player),
-                    player.getDisplayName(),
-                    getSuffix(player),
-                    message);
-            channel.send(null, new ChannelMessageData(getIdentifier(player), channelName, message));
+            if (!chatChannel.isMember(getIdentifier(player))) {
+                player.sendMessage(translate("chat.nochannel"));
+                return false;
+            }
+            format = chatChannel.getMessageFormat();
+        }
+        message = String.format(
+                format,
+                channelName,
+                channel.getName(),
+                player.getWorld().getName(),
+                player.getName(),
+                getPrefix(player),
+                player.getDisplayName(),
+                getSuffix(player),
+                message);
+        return sendChannelMessage(getIdentifier(player), channelName, message);
+    }
+
+    public boolean sendChannelMessage(String playerIdentity, String channelName, String message) {
+        try {
+            channel.send(null, new ChannelMessageData(playerIdentity, channelName, message));
             return true;
         } catch (Exception ex) {
             getLogger().log(Level.WARNING, "Error sending network message", ex);
