@@ -39,7 +39,6 @@ public class DuckReceiver extends ReceiverAdapter {
     public void receive(Message msg) {
         Address src = msg.getSrc();
         Data data = (Data) msg.getObject();
-        plugin.getLogger().log(Level.INFO, "Received message from: " + src + " message: " + data);
         if (data != null) {
             switch (data.getType()) {
                 case MEMBER_CREATE:
