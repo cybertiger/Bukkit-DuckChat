@@ -25,8 +25,8 @@ public class ReloadSubCommand extends SubCommand {
 
     @Override
     public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckcommand.reload")) {
-            throw new PermissionException("duckcommand.reload");
+        if (!sender.hasPermission("duckchat.reload")) {
+            throw new PermissionException("duckchat.reload");
         }
         if (args.length != 0) {
             throw new UsageException();
