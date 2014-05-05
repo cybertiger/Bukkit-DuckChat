@@ -24,23 +24,26 @@ commands:
             - dcreload
 permissions:
         duckchat.channels:
-                default: true
+                default: op
                 description: Allow usage of the channels command.
         duckchat.channel:
-                default: true
+                default: op
                 description: Allow usage of the channel command.
         duckchat.join:
-                default: true
+                default: op
                 description: Allow usage of the join command.
         duckchat.part:
-                default: true
+                default: op
                 description: Allow usage of the part command.
         duckchat.me:
-                default: true
+                default: op
                 description: Allow usage of the me command.
         duckchat.message:
-                default: true
+                default: op
                 description: Allow usage of the message command.
         duckchat.reply:
-                default: true
+                default: op
                 description: Allow usage of the reply command.
+        duckchat.reload:
+                default: op
+                description: Allow usage of the reload command.
