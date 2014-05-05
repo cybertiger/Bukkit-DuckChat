@@ -55,7 +55,7 @@ public class MessageSubCommand extends SubCommand {
                 }
                 String msg = message.toString();
                 plugin.sendMessage(player, identifier, msg);
-                player.sendMessage(plugin.translate("message.format", player.getName(), plugin.getPlayerName(identifier), msg));
+                player.sendMessage(plugin.translate("message.sendformat", player.getName(), plugin.getPlayerName(identifier), msg));
             }
         } else {
             throw new SenderTypeException();

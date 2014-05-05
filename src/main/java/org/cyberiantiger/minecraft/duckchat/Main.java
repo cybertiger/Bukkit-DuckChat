@@ -454,7 +454,7 @@ public class Main extends JavaPlugin implements Listener {
             }
             PlayerState state = getPlayerState(toPlayer);
             state.setReplyAddress(from);
-            toPlayer.sendMessage(translate("message.format", fromMember.getName(), toPlayer.getName(), message));
+            toPlayer.sendMessage(translate("message.receiveformat", fromMember.getName(), toPlayer.getName(), message));
         }
     }
 

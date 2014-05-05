@@ -93,7 +93,8 @@ messages:
         me:
                 usage: '/%s <action>'
         message:
-                format: '[%s -> %s] %s'
+                sendformat: '[me -> %2$s] %3$s'
+                receiveformat: '[%1$s -> me] %3$s'
                 notfound: 'No player called %s found.'
                 usage: '/%s <player> <message>'
         reply:

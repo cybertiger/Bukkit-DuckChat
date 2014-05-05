@@ -47,6 +47,8 @@ public class ReplySubCommand extends SubCommand {
                     }
                     message.append(args[i]);
                 }
+                String msg = message.toString();
+                player.sendMessage(plugin.translate("message.sendformat", player.getName(), plugin.getPlayerName(state.getReplyAddress()), msg));
                 plugin.sendMessage(player, state.getReplyAddress(), message.toString());
             }
         } else {
