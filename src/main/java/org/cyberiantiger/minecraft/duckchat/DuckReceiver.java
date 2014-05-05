@@ -39,47 +39,49 @@ public class DuckReceiver extends ReceiverAdapter {
     public void receive(Message msg) {
         Address src = msg.getSrc();
         Data data = (Data) msg.getObject();
-        switch (data.getType()) {
-            case MEMBER_CREATE:
-                MemberCreateData memberCreateData = (MemberCreateData) data;
-                plugin.createMember(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
-                break;
-            case MEMBER_UPDATE:
-                MemberUpdateData memberUpdateData = (MemberUpdateData) data;
-                plugin.updateMember(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
-                break;
-            case MEMBER_DELETE:
-                MemberDeleteData memberDeleteData = (MemberDeleteData) data;
-                plugin.deleteMember(src, memberDeleteData.getIdentifier());
-                break;
-            case CHANNEL_CREATE:
-                ChannelCreateData channelCreateData = (ChannelCreateData) data;
-                plugin.createChannel(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission());
-                break;
-            case CHANNEL_UPDATE:
-                ChannelUpdateData channelModifyData = (ChannelUpdateData) data;
-                plugin.updateChannel(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission());
-                break;
-            case CHANNEL_DELETE:
-                ChannelDeleteData channelDeleteData = (ChannelDeleteData) data;
-                plugin.deleteChannel(channelDeleteData.getName());
-                break;
-            case CHANNEL_JOIN:
-                ChannelJoinData channelJoinData = (ChannelJoinData) data;
-                plugin.joinChannel(channelJoinData.getChannel(), channelJoinData.getIdentifier());
-                break;
-            case CHANNEL_PART:
-                ChannelPartData channelPartData = (ChannelPartData) data;
-                plugin.partChannel(channelPartData.getChannel(), channelPartData.getIdentifier());
-                break;
-            case CHANNEL_MESSAGE:
-                ChannelMessageData channelMessageData = (ChannelMessageData) data;
-                plugin.messageChannel(channelMessageData.getChannel(), channelMessageData.getIdentifier(), channelMessageData.getMessage());
-                break;
-            case MESSAGE:
-                MessageData messageData = (MessageData) data;
-                plugin.message(messageData.getFrom(), messageData.getTo(), messageData.getMessage());
-                break;
+        if (data != null) {
+            switch (data.getType()) {
+                case MEMBER_CREATE:
+                    MemberCreateData memberCreateData = (MemberCreateData) data;
+                    plugin.createMember(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
+                    break;
+                case MEMBER_UPDATE:
+                    MemberUpdateData memberUpdateData = (MemberUpdateData) data;
+                    plugin.updateMember(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
+                    break;
+                case MEMBER_DELETE:
+                    MemberDeleteData memberDeleteData = (MemberDeleteData) data;
+                    plugin.deleteMember(src, memberDeleteData.getIdentifier());
+                    break;
+                case CHANNEL_CREATE:
+                    ChannelCreateData channelCreateData = (ChannelCreateData) data;
+                    plugin.createChannel(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission());
+                    break;
+                case CHANNEL_UPDATE:
+                    ChannelUpdateData channelModifyData = (ChannelUpdateData) data;
+                    plugin.updateChannel(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission());
+                    break;
+                case CHANNEL_DELETE:
+                    ChannelDeleteData channelDeleteData = (ChannelDeleteData) data;
+                    plugin.deleteChannel(channelDeleteData.getName());
+                    break;
+                case CHANNEL_JOIN:
+                    ChannelJoinData channelJoinData = (ChannelJoinData) data;
+                    plugin.joinChannel(channelJoinData.getChannel(), channelJoinData.getIdentifier());
+                    break;
+                case CHANNEL_PART:
+                    ChannelPartData channelPartData = (ChannelPartData) data;
+                    plugin.partChannel(channelPartData.getChannel(), channelPartData.getIdentifier());
+                    break;
+                case CHANNEL_MESSAGE:
+                    ChannelMessageData channelMessageData = (ChannelMessageData) data;
+                    plugin.messageChannel(channelMessageData.getChannel(), channelMessageData.getIdentifier(), channelMessageData.getMessage());
+                    break;
+                case MESSAGE:
+                    MessageData messageData = (MessageData) data;
+                    plugin.message(messageData.getFrom(), messageData.getTo(), messageData.getMessage());
+                    break;
+            }
         }
     }
 

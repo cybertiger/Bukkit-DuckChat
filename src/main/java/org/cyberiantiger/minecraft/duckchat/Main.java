@@ -488,7 +488,7 @@ public class Main extends JavaPlugin implements Listener {
         synchronized (STATE_LOCK) {
             for (Member member : members.values()) {
                 if (member.getName().toLowerCase().startsWith(toComplete)) {
-                    result.add(member.getName().substring(toComplete.length()));
+                    result.add(member.getName());
                 }
             }
         }
@@ -501,7 +501,7 @@ public class Main extends JavaPlugin implements Listener {
         synchronized(STATE_LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
                 if (chatChannel.getName().toLowerCase().startsWith(toComplete)) {
-                    result.add(chatChannel.getName().substring(toComplete.length()));
+                    result.add(chatChannel.getName());
                 }
             }
         }
@@ -713,7 +713,7 @@ public class Main extends JavaPlugin implements Listener {
             String start = args[0].toLowerCase();
             for (String s : subcommands.keySet()) {
                 if (s.toLowerCase().startsWith(start)) {
-                    result.add(s.substring(start.length()));
+                    result.add(s);
                 }
             }
             return result;
