@@ -46,6 +46,7 @@ import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.command.UsageException;
 import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
+import org.cyberiantiger.minecraft.duckchat.irc.ControlCodes;
 import org.cyberiantiger.minecraft.duckchat.irc.IRCLink;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelCreateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelJoinData;
@@ -243,7 +244,7 @@ public class Main extends JavaPlugin implements Listener {
 
     public String getPrefix(Player player) {
         if (vaultChat != null) {
-            return vaultChat.getPlayerPrefix(player);
+            return vaultChat.getPlayerPrefix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
         } else {
             return "";
         }
@@ -251,7 +252,7 @@ public class Main extends JavaPlugin implements Listener {
 
     public String getSuffix(Player player) {
         if (vaultChat != null) {
-            return vaultChat.getPlayerSuffix(player);
+            return vaultChat.getPlayerSuffix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
         } else {
             return "";
         }
