@@ -50,17 +50,20 @@ channels:
 #                globalAutoJoin: false
 #                permission: some.permission
 
+
+irc-bridges: {}
 # Example irc bridge.
-#
-#irc-bridges:
-#        - nickname: 'DuckChat'
-#          server: 'server.com'
-#          port: 6667
-#          serverpass: ''
-#          ssl: false
-#
-#          channels:
-#                global: #matecaft
+#    test:
+#        ssl: false
+#        host: localhost
+#        port: 6667
+#        nick: DuckChat
+#        password: ''
+#        username: 'bot'
+#        realm: 'localhost'
+#        format: '<IRC> <%s> %s'
+#        channels:
+#            global: '#yourchannel'
                 
 messages:
         chat:
@@ -92,9 +95,13 @@ messages:
                 usage: '/%s <channel>'
         me:
                 usage: '/%s <action>'
+        say:
+                usage: '/%s <message>'
         message:
                 sendformat: '[me -> %2$s] %3$s'
                 receiveformat: '[%1$s -> me] %3$s'
+                echoto: '%2$s'
+                broadcast: '%s'
                 notfound: 'No player called %s found.'
                 usage: '/%s <player> <message>'
         reply:
@@ -104,6 +111,8 @@ messages:
                 success: 'DuckChat settings reloaded.'
                 usage: '/%s'
         error:
-                wrongsender: 'You need to be a player to use this command.'
+                wrongsender: 'You cannot use this command from this entry method.'
                 permission: 'You are missing the required permission: %s.'
                 generic: 'An error occurred: %s.'
+        sender:
+                console: '%s@%s'

@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -42,6 +43,7 @@ import org.cyberiantiger.minecraft.duckchat.command.PartSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.PermissionException;
 import org.cyberiantiger.minecraft.duckchat.command.ReloadSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.ReplySubCommand;
+import org.cyberiantiger.minecraft.duckchat.command.SaySubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.command.UsageException;
@@ -76,7 +78,7 @@ public class Main extends JavaPlugin implements Listener {
     private final List<IRCLink> ircLinks = new ArrayList();
 
     // Players, and their current state.
-    private final Map<String,PlayerState> playerStates = new HashMap<String, PlayerState>();
+    private final Map<String,CommandSenderState> commandSenderStates = new HashMap<String, CommandSenderState>();
 
     // Messages.
     private final Map<String,String> messages = new HashMap<String,String>();
@@ -103,6 +105,13 @@ public class Main extends JavaPlugin implements Listener {
         channel.connect(clusterName);
         channel.getState(null, 0);
         
+        // Register our players.
+        for (Player player : getServer().getOnlinePlayers()) {
+            sendMemberCreate(player);
+        }
+        // Register console.
+        sendMemberCreate(getServer().getConsoleSender());
+
         // Register our channels.
         if (config.isConfigurationSection("channels")) {
             ConfigurationSection channelsSection = config.getConfigurationSection("channels");
@@ -123,14 +132,6 @@ public class Main extends JavaPlugin implements Listener {
             }
         }
         
-        // Register our players.
-        for (Player player : getServer().getOnlinePlayers()) {
-            sendMemberCreate(player);
-            for (String channelName : getAutoJoinChannels(player)) {
-                sendJoinChannel(player, channelName);
-            }
-        }
-
         if (config.isConfigurationSection("irc-bridges")) {
             ConfigurationSection bridgesSection = config.getConfigurationSection("irc-bridges");
             for (String key : bridgesSection.getKeys(false)) {
@@ -242,20 +243,45 @@ public class Main extends JavaPlugin implements Listener {
         channel = null;
     }
 
-    public String getPrefix(Player player) {
-        if (vaultChat != null) {
-            return vaultChat.getPlayerPrefix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
-        } else {
-            return "";
+    public String getName(CommandSender sender) {
+        if (sender instanceof ConsoleCommandSender) {
+            return translate("sender.console", sender.getName(), channel.getName());
         }
+        return sender.getName();
     }
 
-    public String getSuffix(Player player) {
-        if (vaultChat != null) {
-            return vaultChat.getPlayerSuffix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
-        } else {
-            return "";
+    public String getDisplayName(CommandSender sender) {
+        if (sender instanceof Player) {
+            return ((Player)sender).getDisplayName();
         }
+        return getName(sender);
+    }
+
+    public String getWorld(CommandSender sender) {
+        if (sender instanceof Player) {
+            return ((Player)sender).getWorld().getName();
+        }
+        return "";
+    }
+
+    public String getPrefix(CommandSender sender) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (vaultChat != null) {
+                return vaultChat.getPlayerPrefix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
+            }
+        }
+        return "";
+    }
+
+    public String getSuffix(CommandSender sender) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (vaultChat != null) {
+                return vaultChat.getPlayerSuffix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
+            }
+        }
+        return "";
     }
 
     public String getPlayerName(String identifier) {
@@ -268,18 +294,54 @@ public class Main extends JavaPlugin implements Listener {
         return null;
     }
 
+    // Must call with STATE_LOCK held.
+    private void performAutoJoins(ChatChannel chatChannel) {
+        Address local = getLocalAddress();
+        for (Member m : members.values()) {
+            if (local.equals(m.getAddress())) {
+                if (chatChannel.isAutoJoin(m)) {
+                    CommandSender sender = getPlayer(m.getIdentifier());
+                    if (chatChannel.getPermission() != null && sender.hasPermission(chatChannel.getPermission())) {
+                        sendJoinChannel(chatChannel.getName(), m.getIdentifier());
+                    }
+                }
+            }
+        }
+    }
+
+    // Must call with STATE_LOCK held.
+    private void performAutoJoins(Member m) {
+        if (getLocalAddress().equals(m.getAddress())) {
+            for (ChatChannel chatChannel : channels.values()) {
+                if (chatChannel.isAutoJoin(m)) {
+                    CommandSender sender = getPlayer(m.getIdentifier());
+                    if (chatChannel.getPermission() != null && sender.hasPermission(chatChannel.getPermission())) {
+                        sendJoinChannel(chatChannel.getName(), m.getIdentifier());
+                    }
+                }
+            }
+        }
+    }
+
     void setState(InputStream in) throws IOException, Exception {
         DataInputStream dataIn = new DataInputStream(in);
         synchronized (STATE_LOCK) {
-            members.clear();
-            channels.clear();
             List<Member> memberList = (List<Member>) Util.objectFromStream(dataIn);
             List<ChatChannel> channelList = (List<ChatChannel>) Util.objectFromStream(dataIn);
             for (Member m : memberList) {
-                members.put(m.getName(), m);
+                // These should never be local.
+                members.put(m.getIdentifier(), m);
             }
             for (ChatChannel c : channelList) {
-                channels.put(c.getName(), c);
+                ChatChannel old = channels.put(c.getName(), c);
+                if (old != null) {
+                    // If we already knew about a channel, merge the member list.
+                    for (Member m : old.getMembers()) {
+                        c.addMember(m);
+                    }
+                } else {
+                    performAutoJoins(c);
+                }
             }
         }
     }
@@ -326,17 +388,24 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    void createMember(Address addr, String identifier, String name, BitSet flags) {
-        Member member = new Member(addr, identifier, name, flags);
+    void onCreateMember(Address addr, String identifier, String name, BitSet flags) {
         synchronized(STATE_LOCK) {
-            members.put(identifier, member);
-            for (ChatChannel chatChannel : channels.values()) {
-                chatChannel.removeMember(member);
+            // Special case, due to bungee, when a player connects, they may already
+            // be connected to another server, so disconnect them from the other
+            // server first.
+            Member member = new Member(addr, identifier, name, flags);
+            Member old = members.put(identifier, member);
+            if (old != null) {
+                for (ChatChannel chatChannel : channels.values()) {
+                    chatChannel.removeMember(identifier);
+                }
+                member.setReplyAddress(old.getReplyAddress());
             }
+            performAutoJoins(member);
         }
     }
 
-    void updateMember(String identifier, BitSet flags) {
+    void onUpdateMember(String identifier, BitSet flags) {
         synchronized(STATE_LOCK) {
             Member member = members.get(identifier);
             if (member != null) {
@@ -352,7 +421,7 @@ public class Main extends JavaPlugin implements Listener {
                 if (member.getAddress().equals(address)) {
                     members.remove(identifier);
                     for (ChatChannel chatChannel : channels.values()) {
-                        chatChannel.removeMember(member);
+                        chatChannel.removeMember(identifier);
                     }
                 }
             }
@@ -369,6 +438,8 @@ public class Main extends JavaPlugin implements Listener {
             }
             ChatChannel chatChannel = new ChatChannel(owner, name, messageFormat, actionFormat, flags, permission);
             channels.put(name, chatChannel);
+            Address local = getLocalAddress();
+            performAutoJoins(chatChannel);
         }
         registerPermission(permission);
     }
@@ -426,7 +497,7 @@ public class Main extends JavaPlugin implements Listener {
                 getLogger().log(Level.WARNING, "User tried to part a non existant channel: {0}", channelName);
                 return;
             }
-            chatChannel.removeMember(member);
+            chatChannel.removeMember(identifier);
         }
     }
 
@@ -447,14 +518,48 @@ public class Main extends JavaPlugin implements Listener {
 
     void message(String from, String to, String message) {
         synchronized (STATE_LOCK) {
-            Member fromMember = members.get(from);
-            Player toPlayer = getPlayer(to);
-            if (fromMember == null || toPlayer == null) {
-                return;
+            Member fromMember;
+            if (from != null) {
+                fromMember = members.get(from);
+                if (fromMember == null) {
+                    return;
+                }
+            } else {
+                fromMember = null;
             }
-            PlayerState state = getPlayerState(toPlayer);
-            state.setReplyAddress(from);
-            toPlayer.sendMessage(translate("message.receiveformat", fromMember.getName(), toPlayer.getName(), message));
+            Member toMember;
+            if (to != null) {
+                toMember = members.get(to);
+                if (toMember == null) {
+                    return;
+                }
+            } else {
+                toMember = null;
+            }
+            if (toMember != null) {
+                if (fromMember != null) {
+                    // Set reply address if this is not a broadcast or echoto.
+                    toMember.setReplyAddress(from);
+                    // Private message.
+                    CommandSender toPlayer = getPlayer(to);
+                    if (toPlayer != null) {
+                        toPlayer.sendMessage(translate("message.receiveformat", fromMember.getName(), toMember.getName(), message));
+                    }
+                    CommandSender fromPlayer = getPlayer(from);
+                    if (fromPlayer != null) {
+                        fromPlayer.sendMessage(translate("message.sendformat", fromMember.getName(), toMember.getName(), message));
+                    }
+                } else {
+                    // Targetted echo.
+                    CommandSender toPlayer = getPlayer(to);
+                    if (toPlayer != null) {
+                        toPlayer.sendMessage(translate("message.echoto", toMember.getName(), message));
+                    }
+                }
+            } else {
+                // Broadcast.
+                getServer().broadcastMessage(translate("message.broadcast", message));
+            }
         }
     }
 
@@ -462,7 +567,7 @@ public class Main extends JavaPlugin implements Listener {
         return channel.getAddress();
     }
 
-    public void registerPermission(final String permission) {
+    private void registerPermission(final String permission) {
         if (!registerPermissions)
             return;
         if (permission == null)
@@ -495,14 +600,12 @@ public class Main extends JavaPlugin implements Listener {
         return result;
     }
 
-    public List<String> getChannelCompletions(String toComplete) {
+    public List<String> getChannelCompletions(CommandSender sender, String toComplete) {
         toComplete = toComplete.toLowerCase();
         List<String> result = new ArrayList<String>();
-        synchronized(STATE_LOCK) {
-            for (ChatChannel chatChannel : channels.values()) {
-                if (chatChannel.getName().toLowerCase().startsWith(toComplete)) {
-                    result.add(chatChannel.getName());
-                }
+        for (String s : getAvailableChannels(sender)) {
+            if (s.toLowerCase().contains(toComplete)) {
+                result.add(s);
             }
         }
         return result;
@@ -537,7 +640,7 @@ public class Main extends JavaPlugin implements Listener {
      * @param player
      * @return 
      */
-    public List<String> getAvailableChannels(Player player) {
+    public List<String> getAvailableChannels(CommandSender player) {
         List<String> ret = new ArrayList<String>();
         synchronized (STATE_LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
@@ -557,7 +660,7 @@ public class Main extends JavaPlugin implements Listener {
      * @param player
      * @return 
      */
-    public List<String> getAutoJoinChannels(Player player) {
+    public List<String> getAutoJoinChannels(CommandSender player) {
         List<String> ret = new ArrayList<String>();
         synchronized (STATE_LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
@@ -582,16 +685,19 @@ public class Main extends JavaPlugin implements Listener {
      * @param player
      * @return 
      */
-    public List<String> getChannels(Player player) {
+    public List<String> getChannels(CommandSender player) {
         List<String> ret = new ArrayList<String>();
         synchronized (STATE_LOCK) {
-            for (ChatChannel chatChannel : channels.values()) {
-                String permission = chatChannel.getPermission();
-                if (permission != null && !player.hasPermission(permission)) {
-                    continue;
-                }
-                if (chatChannel.isMember(getIdentifier(player))) {
-                    ret.add(chatChannel.getName());
+            String identifier = getIdentifier(player);
+            if (identifier != null) {
+                for (ChatChannel chatChannel : channels.values()) {
+                    String permission = chatChannel.getPermission();
+                    if (permission != null && !player.hasPermission(permission)) {
+                        continue;
+                    }
+                    if (chatChannel.isMember(identifier)) {
+                        ret.add(chatChannel.getName());
+                    }
                 }
             }
         }
@@ -611,28 +717,60 @@ public class Main extends JavaPlugin implements Listener {
         return ret;
     }
 
-    public String getIdentifier(Player player) {
-        if (useUUIDs) {
-            return player.getUniqueId().toString();
+    public String getIdentifier(CommandSender player) {
+        if (player instanceof Player) {
+            if (useUUIDs) {
+                return ((Player)player).getUniqueId().toString();
+            } else {
+                return player.getName();
+            }
+        } else if (player instanceof ConsoleCommandSender) {
+            return "dc:console:" + channel.getName();
+        }
+        return null;
+    }
+
+    public CommandSender getPlayer(String identifier) {
+        if (identifier.startsWith("dc:")) {
+            if (identifier.equals("dc:console:" + channel.getName())) {
+                return getServer().getConsoleSender();
+            } else {
+                return null;
+            }
         } else {
-            return player.getName();
+            if (useUUIDs) {
+                return getServer().getPlayer(UUID.fromString(identifier));
+            } else {
+                return getServer().getPlayer(identifier);
+            }
         }
     }
 
-    public Player getPlayer(String identifier) {
-        if (useUUIDs) {
-            return getServer().getPlayer(UUID.fromString(identifier));
-        } else {
-            return getServer().getPlayer(identifier);
+    public String getReplyAddress(String identifier) {
+        synchronized(STATE_LOCK) {
+            Member member = members.get(identifier);
+            return member == null ? null : member.getReplyAddress();
         }
     }
 
-    public PlayerState getPlayerState(Player player) {
+    public String getReplyAddress(CommandSender sender) {
+        String identifier = getIdentifier(sender);
+        if (identifier == null) {
+            return null;
+        }
+        return getReplyAddress(identifier);
+    }
+
+    public CommandSenderState getCommandSenderState(CommandSender player) {
+        String identifier = getIdentifier(player);
+        if (identifier == null) {
+            return null;
+        }
         synchronized (STATE_LOCK) {
-            PlayerState ret = playerStates.get(getIdentifier(player));
+            CommandSenderState ret = commandSenderStates.get(identifier);
             if (ret == null) {
-                ret = new PlayerState(defaultChannel);
-                playerStates.put(getIdentifier(player), ret);
+                ret = new CommandSenderState(defaultChannel);
+                commandSenderStates.put(identifier, ret);
             }
             return ret;
         }
@@ -649,6 +787,7 @@ public class Main extends JavaPlugin implements Listener {
         SubCommand messageSubCommand = new MessageSubCommand(this);
         SubCommand replySubCommand = new ReplySubCommand(this);
         SubCommand reloadSubCommand = new ReloadSubCommand(this);
+        SubCommand saySubCommand = new SaySubCommand(this);
 
         subcommands.put("channels", channelsSubCommand);
         subcommands.put("channel", channelSubCommand);
@@ -664,6 +803,7 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("reply", replySubCommand);
         subcommands.put("reload", reloadSubCommand);
         subcommands.put("dcreload", reloadSubCommand);
+        subcommands.put("say", saySubCommand);
     }
 
     @Override
@@ -721,9 +861,15 @@ public class Main extends JavaPlugin implements Listener {
         return null;
     }
 
-    public void sendMemberCreate(Player player) {
+    public void sendMemberCreate(CommandSender player) {
         try {
-            channel.send(null, new MemberCreateData(getIdentifier(player), player.getName(), new BitSet()));
+            String playerName;
+            if (player instanceof ConsoleCommandSender) {
+                playerName = "console@" + channel.getName();
+            } else {
+                playerName = player.getName();
+            }
+            channel.send(null, new MemberCreateData(getIdentifier(player), playerName, new BitSet()));
         } catch (Exception ex) {
             getLogger().log(Level.WARNING, "Error sending network message", ex);
         }
@@ -745,15 +891,19 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    public void sendJoinChannel(Player player, String channelName) {
+    public void sendJoinChannel(String channelName, CommandSender sender) {
+        sendJoinChannel(channelName, getIdentifier(sender));
+    }
+
+    public void sendJoinChannel(String channelName, String identifier) {
         try {
-            channel.send(null, new ChannelJoinData(channelName, getIdentifier(player)));
+            channel.send(null, new ChannelJoinData(channelName, identifier));
         } catch (Exception ex) {
             getLogger().log(Level.WARNING, "Error sending network message", ex);
         }
     }
 
-    public void sendPartChannel(Player player, String channelName) {
+    public void sendPartChannel(CommandSender player, String channelName) {
         try {
             channel.send(null, new ChannelPartData(channelName, getIdentifier(player), player.getName()));
         } catch (Exception ex) {
@@ -761,8 +911,11 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    public boolean sendChannelAction(Player player, String action) {
-        PlayerState state = getPlayerState(player);
+    public boolean sendChannelAction(CommandSender player, String action) {
+        CommandSenderState state = getCommandSenderState(player);
+        if (state == null) {
+            return false;
+        }
         if (state.getCurrentChannel() == null) {
             player.sendMessage(translate("chat.nochannel"));
             return false;
@@ -770,7 +923,7 @@ public class Main extends JavaPlugin implements Listener {
         return sendChannelAction(player, state.getCurrentChannel(), action);
     }
 
-    public boolean sendChannelAction(Player player, String channelName, String action) {
+    public boolean sendChannelAction(CommandSender player, String channelName, String action) {
         String format;
         synchronized(STATE_LOCK) {
             ChatChannel chatChannel = channels.get(channelName);
@@ -788,17 +941,17 @@ public class Main extends JavaPlugin implements Listener {
                 format,
                 channelName,
                 channel.getName(),
-                player.getWorld().getName(),
-                player.getName(),
+                getWorld(player),
+                getName(player),
                 getPrefix(player),
-                player.getDisplayName(),
+                getDisplayName(player),
                 getSuffix(player),
                 action);
         return sendChannelMessage(getIdentifier(player), channelName, action);
     }
 
-    public boolean sendChannelMessage(Player player, String message) {
-        PlayerState state = getPlayerState(player);
+    public boolean sendChannelMessage(CommandSender player, String message) {
+        CommandSenderState state = getCommandSenderState(player);
         if (state.getCurrentChannel() == null) {
             player.sendMessage(translate("chat.nochannel"));
             return false;
@@ -806,7 +959,7 @@ public class Main extends JavaPlugin implements Listener {
         return sendChannelMessage(player, state.getCurrentChannel(), message);
     }
 
-    public boolean sendChannelMessage(Player player, String channelName, String message) {
+    public boolean sendChannelMessage(CommandSender player, String channelName, String message) {
         String format;
         synchronized(STATE_LOCK) {
             ChatChannel chatChannel = channels.get(channelName);
@@ -824,10 +977,10 @@ public class Main extends JavaPlugin implements Listener {
                 format,
                 channelName,
                 channel.getName(),
-                player.getWorld().getName(),
-                player.getName(),
+                getWorld(player),
+                getName(player),
                 getPrefix(player),
-                player.getDisplayName(),
+                getDisplayName(player),
                 getSuffix(player),
                 message);
         return sendChannelMessage(getIdentifier(player), channelName, message);
@@ -843,18 +996,9 @@ public class Main extends JavaPlugin implements Listener {
         return false;
     }
 
-    public void sendMessage(Player from, String to, String message) {
+    public void sendMessage(CommandSender from, String to, String message) {
         try {
-            Address target = null;
-            synchronized (STATE_LOCK) {
-                Member member = members.get(to);
-                if (member != null) {
-                    target = member.getAddress();
-                }
-            }
-            if (target != null) {
-                channel.send(target, new MessageData(getIdentifier(from), to, message));
-            }
+            channel.send(null, new MessageData(getIdentifier(from), to, message));
         } catch (Exception ex) {
             getLogger().log(Level.WARNING, "Error sending network message", ex);
         }

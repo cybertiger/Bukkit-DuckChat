@@ -24,25 +24,24 @@ public class PartSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.part")) {
             throw new PermissionException("duckchat.part");
         }
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            if (args.length == 1) {
-                String channel = findIgnoringCase(args[0], plugin.getAvailableChannels(player));
-                if (channel == null) {
-                    player.sendMessage(plugin.translate("part.nochannel", args[0]));
-                    return;
-                }
-                if (!plugin.getChannels(player).contains(channel)) {
-                    player.sendMessage(plugin.translate("part.membership", channel));
-                    return;
-                }
-                player.sendMessage(plugin.translate("part.success", channel));
-                plugin.sendPartChannel(player, channel);
-            } else {
-                throw new UsageException();
-            }
-        } else {
+        String identifier = plugin.getIdentifier(sender);
+        if (identifier == null) {
             throw new SenderTypeException();
+        }
+        if (args.length == 1) {
+            String channel = findIgnoringCase(args[0], plugin.getAvailableChannels(sender));
+            if (channel == null) {
+                sender.sendMessage(plugin.translate("part.nochannel", args[0]));
+                return;
+            }
+            if (!plugin.getChannels(sender).contains(channel)) {
+                sender.sendMessage(plugin.translate("part.membership", channel));
+                return;
+            }
+            sender.sendMessage(plugin.translate("part.success", channel));
+            plugin.sendPartChannel(sender, channel);
+        } else {
+            throw new UsageException();
         }
     }
 
@@ -54,7 +53,7 @@ public class PartSubCommand extends SubCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String... args) {
         if (args.length == 1) {
-            return plugin.getChannelCompletions(args[0]);
+            return plugin.getChannelCompletions(sender, args[0]);
         } else {
             return null;
         }

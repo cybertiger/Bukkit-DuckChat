@@ -32,9 +32,6 @@ public class DuckListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         plugin.sendMemberCreate(e.getPlayer());
-        for (String channel : plugin.getAutoJoinChannels(e.getPlayer())) {
-            plugin.sendJoinChannel(e.getPlayer(), channel);
-        }
     }
 
     @EventHandler

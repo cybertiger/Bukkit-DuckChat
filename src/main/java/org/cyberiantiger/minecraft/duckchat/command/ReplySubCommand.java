@@ -6,9 +6,10 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.PlayerState;
+import org.cyberiantiger.minecraft.duckchat.CommandSenderState;
 
 /**
  *
@@ -27,33 +28,34 @@ public class ReplySubCommand extends SubCommand {
 
     @Override
     public void onCommand(CommandSender sender, String... args) throws SubCommandException {
+        // Permission.
         if (!sender.hasPermission("duckchat.reply")) {
             throw new PermissionException("duckchat.reply");
         }
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            PlayerState state = plugin.getPlayerState(player);
-            if (args.length == 0) {
-                throw new UsageException();
-            } else {
-                if (state.getReplyAddress() == null) {
-                    player.sendMessage(plugin.translate("reply.notfound"));
-                    return;
-                }
-                StringBuilder message = new StringBuilder();
-                for (int i = 0; i < args.length; i++) {
-                    if (i != 0) {
-                        message.append(' ');
-                    }
-                    message.append(args[i]);
-                }
-                String msg = message.toString();
-                player.sendMessage(plugin.translate("message.sendformat", player.getName(), plugin.getPlayerName(state.getReplyAddress()), msg));
-                plugin.sendMessage(player, state.getReplyAddress(), message.toString());
-            }
-        } else {
+        // Usage
+        if (args.length == 0) {
+            throw new UsageException();
+        }
+        // Sender
+        String senderIdentifier = plugin.getIdentifier(sender);
+        if (senderIdentifier == null) {
             throw new SenderTypeException();
         }
+        // Has current reply address.
+        String replyAddress = plugin.getReplyAddress(sender);
+        if (replyAddress == null) {
+            sender.sendMessage(plugin.translate("reply.notfound"));
+            return;
+        }
+        StringBuilder message = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            if (i != 0) {
+                message.append(' ');
+            }
+            message.append(args[i]);
+        }
+        String msg = message.toString();
+        plugin.sendMessage(sender, replyAddress, message.toString());
     }
 
     @Override

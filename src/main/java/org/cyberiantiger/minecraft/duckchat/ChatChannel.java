@@ -61,8 +61,8 @@ public class ChatChannel implements Serializable {
         members.put(member.getIdentifier(), member);
     }
 
-    public void removeMember(Member member) {
-        members.remove(member.getIdentifier());
+    public void removeMember(String identifier) {
+        members.remove(identifier);
     }
 
     public Collection<Member> getMembers() {
@@ -91,5 +91,10 @@ public class ChatChannel implements Serializable {
 
     boolean isMember(String identifier) {
         return members.containsKey(identifier);
+    }
+
+    @Override
+    public String toString() {
+        return "ChatChannel{" + "owner=" + owner + ", name=" + name + ", messageFormat=" + messageFormat + ", actionFormat=" + actionFormat + ", flags=" + flags + ", permission=" + permission + ", members=" + members + '}';
     }
 }

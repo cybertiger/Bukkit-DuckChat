@@ -8,12 +8,12 @@ package org.cyberiantiger.minecraft.duckchat;
  *
  * @author antony
  */
-public class PlayerState {
+public class CommandSenderState {
 
     private String currentChannel;
     private String replyAddress = null;
 
-    public PlayerState(String currentChannel) {
+    public CommandSenderState(String currentChannel) {
         this.currentChannel = currentChannel;
     }
 
@@ -23,13 +23,5 @@ public class PlayerState {
 
     public void setCurrentChannel(String currentChannel) {
         this.currentChannel = currentChannel;
-    }
-
-    public String getReplyAddress() {
-        return replyAddress;
-    }
-
-    public void setReplyAddress(String replyAddress) {
-        this.replyAddress = replyAddress;
     }
 }

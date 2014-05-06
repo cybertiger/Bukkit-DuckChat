@@ -6,9 +6,7 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.PlayerState;
 
 /**
  *
@@ -34,31 +32,28 @@ public class MessageSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.message")) {
             throw new PermissionException("duckchat.message");
         }
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            PlayerState state = plugin.getPlayerState(player);
-            if (args.length <= 1) {
-                throw new UsageException();
-            } else {
-                String target = args[0];
-                String identifier = plugin.findPlayerIdentifier(target);
-                if (identifier == null) {
-                    player.sendMessage(plugin.translate("message.notfound", args[0]));
-                    return;
-                }
-                StringBuilder message = new StringBuilder();
-                for (int i = 1; i < args.length; i++) {
-                    if (i != 1) {
-                        message.append(' ');
-                    }
-                    message.append(args[i]);
-                }
-                String msg = message.toString();
-                plugin.sendMessage(player, identifier, msg);
-                player.sendMessage(plugin.translate("message.sendformat", player.getName(), plugin.getPlayerName(identifier), msg));
-            }
-        } else {
+        String senderIdentifier = plugin.getIdentifier(sender);
+        if (senderIdentifier == null) {
             throw new SenderTypeException();
+        }
+        if (args.length <= 1) {
+            throw new UsageException();
+        } else {
+            String target = args[0];
+            String identifier = plugin.findPlayerIdentifier(target);
+            if (identifier == null) {
+                sender.sendMessage(plugin.translate("message.notfound", args[0]));
+                return;
+            }
+            StringBuilder message = new StringBuilder();
+            for (int i = 1; i < args.length; i++) {
+                if (i != 1) {
+                    message.append(' ');
+                }
+                message.append(args[i]);
+            }
+            String msg = message.toString();
+            plugin.sendMessage(sender, identifier, msg);
         }
     }
 

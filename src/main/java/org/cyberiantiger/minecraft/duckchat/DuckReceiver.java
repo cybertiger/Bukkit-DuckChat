@@ -6,7 +6,6 @@ package org.cyberiantiger.minecraft.duckchat;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelCreateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelDeleteData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelMessageData;
@@ -43,11 +42,11 @@ public class DuckReceiver extends ReceiverAdapter {
             switch (data.getType()) {
                 case MEMBER_CREATE:
                     MemberCreateData memberCreateData = (MemberCreateData) data;
-                    plugin.createMember(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
+                    plugin.onCreateMember(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
                     break;
                 case MEMBER_UPDATE:
                     MemberUpdateData memberUpdateData = (MemberUpdateData) data;
-                    plugin.updateMember(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
+                    plugin.onUpdateMember(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
                     break;
                 case MEMBER_DELETE:
                     MemberDeleteData memberDeleteData = (MemberDeleteData) data;

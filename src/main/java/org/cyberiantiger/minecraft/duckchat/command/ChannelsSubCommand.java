@@ -7,7 +7,6 @@ package org.cyberiantiger.minecraft.duckchat.command;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
@@ -15,7 +14,6 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  * @author antony
  */
 public class ChannelsSubCommand extends SubCommand {
-
     public ChannelsSubCommand(Main plugin) {
         super(plugin);
     }
@@ -25,23 +23,22 @@ public class ChannelsSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.channels")) {
             throw new PermissionException("duckchat.channels");
         }
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            List<String> available = plugin.getAvailableChannels(player);
-            List<String> joined = plugin.getChannels(player);
-            Collections.sort(available);
-            player.sendMessage(plugin.translate("channels.header"));
-            for (String channelName : available) {
-                if (joined.contains(channelName)) {
-                    player.sendMessage(plugin.translate("channels.joinedchannel", channelName));
-                } else {
-                    player.sendMessage(plugin.translate("channels.channel", channelName));
-                }
-            }
-            player.sendMessage(plugin.translate("channels.footer"));
-        } else {
+        String identifier = plugin.getIdentifier(sender);
+        if (identifier == null) {
             throw new SenderTypeException();
         }
+        List<String> available = plugin.getAvailableChannels(sender);
+        List<String> joined = plugin.getChannels(sender);
+        Collections.sort(available, String.CASE_INSENSITIVE_ORDER);
+        sender.sendMessage(plugin.translate("channels.header"));
+        for (String channelName : available) {
+            if (joined.contains(channelName)) {
+                sender.sendMessage(plugin.translate("channels.joinedchannel", channelName));
+            } else {
+                sender.sendMessage(plugin.translate("channels.channel", channelName));
+            }
+        }
+        sender.sendMessage(plugin.translate("channels.footer"));
     }
 
     @Override

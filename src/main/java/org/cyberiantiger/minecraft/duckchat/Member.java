@@ -18,6 +18,7 @@ public class Member implements Serializable {
     private final String identifier;
     private final String name;
     private BitSet flags;
+    private String replyAddress;
 
     public Member(Address address, String identifier, String name, BitSet flags) {
         this.address = address;
@@ -46,8 +47,17 @@ public class Member implements Serializable {
         this.flags = flags;
     }
 
+    public String getReplyAddress() {
+        return replyAddress;
+    }
+
+    public void setReplyAddress(String replyAddress) {
+        this.replyAddress = replyAddress;
+    }
+
     @Override
     public String toString() {
-        return "Member{" + "address=" + address + ", identifier=" + identifier + ", name=" + name + ", flags=" + flags + '}';
+        return "Member{" + "address=" + address + ", identifier=" + identifier + ", name=" + name + ", flags=" + flags + ", replyAddress=" + replyAddress + '}';
     }
+
 }

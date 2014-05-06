@@ -6,30 +6,31 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
  *
  * @author antony
  */
-public class MeSubCommand extends SubCommand {
+public class SaySubCommand extends SubCommand {
 
-    public MeSubCommand(Main plugin) {
+    public SaySubCommand(Main plugin) {
         super(plugin);
     }
 
     @Override
+    public List<String> onTabComplete(CommandSender sender, String... args) {
+        return null;
+    }
+
+    @Override
     public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchat.me")) {
-            throw new PermissionException("duckchat.me");
+        if (!sender.hasPermission("duckchat.say")) {
+            throw new PermissionException("duckchat.say");
         }
         String identifier = plugin.getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();
-        }
-        if (args.length == 0) {
-            throw new UsageException();
         }
         StringBuilder msg = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
@@ -38,17 +39,13 @@ public class MeSubCommand extends SubCommand {
             }
             msg.append(args[i]);
         }
-        plugin.sendChannelAction(sender, msg.toString());
+        plugin.sendChannelMessage(sender, msg.toString());
     }
 
     @Override
     public String getName() {
-        return "me";
+        return "say";
     }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, String... args) {
-        return null;
-    }
-
+    
+    
 }

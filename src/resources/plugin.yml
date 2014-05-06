@@ -47,3 +47,6 @@ permissions:
         duckchat.reload:
                 default: op
                 description: Allow usage of the reload command.
+        duckchat.say:
+                default: op
+                description: Allow usage of the say command.
