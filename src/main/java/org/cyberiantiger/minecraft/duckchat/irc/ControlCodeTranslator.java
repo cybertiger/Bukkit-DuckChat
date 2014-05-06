@@ -59,10 +59,10 @@ public interface ControlCodeTranslator {
                     ret.append(target.lightMagenta());
                     break;
                 case 14:
-                    ret.append(target.gray());
+                    ret.append(reverse ? target.lightGray() : target.gray());
                     break;
                 case 15:
-                    ret.append(target.lightGray());
+                    ret.append(reverse ? target.gray() : target.lightGray());
                     break;
             }
         }
@@ -193,11 +193,11 @@ public interface ControlCodeTranslator {
                                 state = 0;
                                 break;
                             case '7':
-                                ret.append(target.lightGray());
+                                ret.append(reverse ? target.gray() : target.lightGray());
                                 state = 0;
                                 break;
                             case '8':
-                                ret.append(target.gray());
+                                ret.append(reverse ? target.lightGray() : target.gray());
                                 state = 0;
                                 break;
                             case '9':
