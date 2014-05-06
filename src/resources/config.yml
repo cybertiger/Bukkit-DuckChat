@@ -105,8 +105,9 @@ messages:
                 notfound: 'No player called %s found.'
                 usage: '/%s <player> <message>'
         reply:
+                address: 'You current reply address is: %s'
                 notfound: 'You have no reply address.'
-                usage: '/%s <message>'
+                usage: '/%s [message]'
         reload:
                 success: 'DuckChat settings reloaded.'
                 usage: '/%s'

@@ -32,10 +32,6 @@ public class ReplySubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.reply")) {
             throw new PermissionException("duckchat.reply");
         }
-        // Usage
-        if (args.length == 0) {
-            throw new UsageException();
-        }
         // Sender
         String senderIdentifier = plugin.getIdentifier(sender);
         if (senderIdentifier == null) {
@@ -47,15 +43,19 @@ public class ReplySubCommand extends SubCommand {
             sender.sendMessage(plugin.translate("reply.notfound"));
             return;
         }
-        StringBuilder message = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
-            if (i != 0) {
-                message.append(' ');
+        if (args.length == 0) {
+            sender.sendMessage(plugin.translate("reply.address", replyAddress));
+        } else {
+            StringBuilder message = new StringBuilder();
+            for (int i = 0; i < args.length; i++) {
+                if (i != 0) {
+                    message.append(' ');
+                }
+                message.append(args[i]);
             }
-            message.append(args[i]);
+            String msg = message.toString();
+            plugin.sendMessage(sender, replyAddress, msg);
         }
-        String msg = message.toString();
-        plugin.sendMessage(sender, replyAddress, message.toString());
     }
 
     @Override
