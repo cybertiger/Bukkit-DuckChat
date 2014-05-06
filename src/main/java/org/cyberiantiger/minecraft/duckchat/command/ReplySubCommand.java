@@ -41,7 +41,7 @@ public class ReplySubCommand extends SubCommand {
             return;
         }
         if (args.length == 0) {
-            sender.sendMessage(plugin.translate("reply.address", replyAddress));
+            sender.sendMessage(plugin.translate("reply.address", plugin.getPlayerName(replyAddress)));
         } else {
             StringBuilder message = new StringBuilder();
             for (int i = 0; i < args.length; i++) {
