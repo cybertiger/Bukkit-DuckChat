@@ -51,8 +51,8 @@ channels:
 #                permission: some.permission
 
 
-irc-bridges: {}
 # Example irc bridge.
+#irc-bridges:
 #    test:
 #        ssl: false
 #        host: localhost
@@ -61,7 +61,8 @@ irc-bridges: {}
 #        password: ''
 #        username: 'bot'
 #        realm: 'localhost'
-#        format: '<IRC> <%s> %s'
+#        messageFormat: '[global %s@IRC] %s'
+#        actionFormat: '[global] *%s@IRC %s'
 #        channels:
 #            global: '#yourchannel'
                 
@@ -120,3 +121,7 @@ messages:
         member:
                 join: '%s has joined %s'
                 leave: '%s has left %s'
+        irc:
+                playerlist:
+                        header: '%2$d players playing Minecraft on %1$d servers.'
+                        line: '%s(%d): %s'

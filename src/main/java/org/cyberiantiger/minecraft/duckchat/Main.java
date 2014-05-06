@@ -148,9 +148,10 @@ public class Main extends JavaPlugin implements Listener {
                 String nick = bridgeSection.getString("nick", "DuckChat");
                 String username = bridgeSection.getString("username", "bot");
                 String realm = bridgeSection.getString("realm", "localhost");
-                String format = bridgeSection.getString("format", "<%s> %s");
+                String messageFormat = bridgeSection.getString("messageFormat", "<%s> %s");
+                String actionFormat = bridgeSection.getString("actionFormat", "*%s %s");
 
-                IRCLink ircLink = new IRCLink(this, useSsl, host, port, password, nick, username, realm, format);
+                IRCLink ircLink = new IRCLink(this, useSsl, host, port, password, nick, username, realm, messageFormat, actionFormat);
 
                 if (bridgeSection.isConfigurationSection("channels")) {
                     ConfigurationSection bridgeChannelSection = bridgeSection.getConfigurationSection("channels");
@@ -727,6 +728,31 @@ public class Main extends JavaPlugin implements Listener {
             }
         }
         return ret;
+    }
+
+    public Map<String,List<String>> getPlayersByServer(boolean onlyPlayers) {
+        synchronized (STATE_LOCK) {
+            Map<Address, List<String>> result = new HashMap<Address,List<String>>();
+            for (Address addr : channel.getView().getMembers()) {
+                result.put(addr, new ArrayList<String>());
+            }
+            for (Member m : members.values()) {
+                if (!onlyPlayers || !m.getIdentifier().startsWith("dc:"))  {
+                    if (result.containsKey(m.getAddress())) {
+                        result.get(m.getAddress()).add(m.getName());
+                    } else {
+                        List<String> tmp = new ArrayList<String>();
+                        tmp.add(m.getName());
+                        result.put(m.getAddress(), tmp);
+                    }
+                }
+            }
+            Map<String, List<String>> res2 = new HashMap<String, List<String>>(result.size());
+            for (Map.Entry<Address, List<String>> e : result.entrySet()) {
+                res2.put(channel.getName(e.getKey()), e.getValue());
+            }
+            return res2;
+        }
     }
 
     public String getIdentifier(CommandSender player) {
