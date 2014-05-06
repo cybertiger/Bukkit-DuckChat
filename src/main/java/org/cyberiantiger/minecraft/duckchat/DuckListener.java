@@ -11,6 +11,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
 
 /**
  *
@@ -23,26 +25,39 @@ public class DuckListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent e) {
         e.setCancelled(true);
         plugin.sendChannelMessage(e.getPlayer(), e.getMessage());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent e) {
         plugin.sendMemberCreate(e.getPlayer());
+        e.setJoinMessage(null);
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         plugin.sendMemberDelete(e.getPlayer());
+        e.setQuitMessage(null);
     }
 
     @EventHandler
     public void onPlayerKick(PlayerKickEvent e) {
         plugin.sendMemberDelete(e.getPlayer());
+        e.setLeaveMessage(null);
     }
 
-    
+    @EventHandler
+    public void onMemberJoin(MemberJoinEvent e) {
+        plugin.getServer().broadcastMessage(plugin.translate("member.join", e.getName(), e.getHost()));
+        plugin.getLogger().info(plugin.translate("member.join", e.getName(), e.getHost()));
+    }
+
+    @EventHandler
+    public void onMemberLeave(MemberLeaveEvent e) {
+        plugin.getServer().broadcastMessage(plugin.translate("member.leave", e.getName(), e.getHost()));
+        plugin.getLogger().info(plugin.translate("member.leave", e.getName(), e.getHost()));
+    }
 }

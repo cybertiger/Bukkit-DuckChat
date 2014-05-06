@@ -48,6 +48,8 @@ import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.command.UsageException;
 import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.irc.ControlCodes;
 import org.cyberiantiger.minecraft.duckchat.irc.IRCLink;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelCreateData;
@@ -301,7 +303,7 @@ public class Main extends JavaPlugin implements Listener {
             if (local.equals(m.getAddress())) {
                 if (chatChannel.isAutoJoin(m)) {
                     CommandSender sender = getPlayer(m.getIdentifier());
-                    if (chatChannel.getPermission() != null && sender.hasPermission(chatChannel.getPermission())) {
+                    if (chatChannel.getPermission() == null || sender.hasPermission(chatChannel.getPermission())) {
                         sendJoinChannel(chatChannel.getName(), m.getIdentifier());
                     }
                 }
@@ -315,7 +317,7 @@ public class Main extends JavaPlugin implements Listener {
             for (ChatChannel chatChannel : channels.values()) {
                 if (chatChannel.isAutoJoin(m)) {
                     CommandSender sender = getPlayer(m.getIdentifier());
-                    if (chatChannel.getPermission() != null && sender.hasPermission(chatChannel.getPermission())) {
+                    if (chatChannel.getPermission() == null || sender.hasPermission(chatChannel.getPermission())) {
                         sendJoinChannel(chatChannel.getName(), m.getIdentifier());
                     }
                 }
@@ -403,6 +405,8 @@ public class Main extends JavaPlugin implements Listener {
             }
             performAutoJoins(member);
         }
+        MemberJoinEvent event = new MemberJoinEvent(channel.getName(addr), identifier, name);
+        getServer().getPluginManager().callEvent(event);
     }
 
     void onUpdateMember(String identifier, BitSet flags) {
@@ -414,17 +418,25 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    void deleteMember(Address address, String identifier) {
+    void deleteMember(Address addr, String identifier) {
+        boolean left = false;
+        String name = null;
         synchronized(STATE_LOCK) {
             Member member = members.get(identifier);
             if (member != null) {
-                if (member.getAddress().equals(address)) {
+                name = member.getName();
+                if (member.getAddress().equals(addr)) {
                     members.remove(identifier);
                     for (ChatChannel chatChannel : channels.values()) {
                         chatChannel.removeMember(identifier);
                     }
+                    left = true;
                 }
             }
+        }
+        if (left && name != null) {
+            MemberLeaveEvent event = new MemberLeaveEvent(channel.getName(addr), identifier, name);
+            getServer().getPluginManager().callEvent(event);
         }
     }
 

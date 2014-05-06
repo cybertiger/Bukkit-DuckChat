@@ -6,10 +6,7 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.CommandSenderState;
 
 /**
  *

@@ -117,3 +117,6 @@ messages:
                 generic: 'An error occurred: %s.'
         sender:
                 console: '%s@%s'
+        member:
+                join: '%s has joined %s'
+                leave: '%s has left %s'

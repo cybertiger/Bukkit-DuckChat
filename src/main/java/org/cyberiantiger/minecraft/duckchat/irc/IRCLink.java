@@ -7,11 +7,12 @@ package org.cyberiantiger.minecraft.duckchat.irc;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.cyberiantiger.minecraft.duckchat.Main;
 import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
+import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
 import org.schwering.irc.lib.IRCConnection;
 import org.schwering.irc.lib.IRCEventAdapter;
 import org.schwering.irc.lib.IRCUser;
@@ -32,6 +33,23 @@ public class IRCLink {
             if (duckToIrc.containsKey(e.getChannel())) {
                 String message = ControlCodeTranslator.MINECRAFT.translate(e.getMessage(), ControlCodes.IRC, true);
                 ircConnection.doPrivmsg(duckToIrc.get(e.getChannel()), message);
+            }
+        }
+        @EventHandler
+        public void onMemberJoin(MemberJoinEvent e) {
+            String message = plugin.translate("member.join", e.getName(), e.getHost());
+            message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
+            for (String channel : duckToIrc.values()) {
+                ircConnection.doPrivmsg(channel, message);
+            }
+        }
+
+        @EventHandler
+        public void onMemberLeave(MemberLeaveEvent e) {
+            String message = plugin.translate("member.leave", e.getName(), e.getHost());
+            message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
+            for (String channel : duckToIrc.values()) {
+                ircConnection.doPrivmsg(channel, message);
             }
         }
     };
