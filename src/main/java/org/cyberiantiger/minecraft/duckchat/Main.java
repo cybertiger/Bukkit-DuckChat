@@ -833,15 +833,18 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("chlist", channelListSubCommand);
         subcommands.put("join", joinSubCommand);
         subcommands.put("part", partSubCommand);
-        subcommands.put("me", meSubCommand);
-        subcommands.put("m", messageSubCommand);
         subcommands.put("msg", messageSubCommand);
         subcommands.put("message", messageSubCommand);
-        subcommands.put("r", replySubCommand);
+        subcommands.put("whisper", messageSubCommand);
+        subcommands.put("tell", messageSubCommand);
         subcommands.put("reply", replySubCommand);
         subcommands.put("reload", reloadSubCommand);
         subcommands.put("dcreload", reloadSubCommand);
         subcommands.put("say", saySubCommand);
+        subcommands.put("me", meSubCommand);
+        subcommands.put("m", messageSubCommand);
+        subcommands.put("r", replySubCommand);
+        subcommands.put("t", messageSubCommand);
     }
 
     @Override
@@ -949,29 +952,29 @@ public class Main extends JavaPlugin implements Listener {
         }
     }
 
-    public boolean sendChannelAction(CommandSender player, String action) {
+    public void sendChannelAction(CommandSender player, String action) {
         CommandSenderState state = getCommandSenderState(player);
         if (state == null) {
-            return false;
+            return;
         }
         if (state.getCurrentChannel() == null) {
             player.sendMessage(translate("chat.nochannel"));
-            return false;
+            return;
         }
-        return sendChannelAction(player, state.getCurrentChannel(), action);
+        sendChannelAction(player, state.getCurrentChannel(), action);
     }
 
-    public boolean sendChannelAction(CommandSender player, String channelName, String action) {
+    public void sendChannelAction(CommandSender player, String channelName, String action) {
         String format;
         synchronized(STATE_LOCK) {
             ChatChannel chatChannel = channels.get(channelName);
             if (chatChannel == null) {
                 player.sendMessage(translate("chat.nochannel"));
-                return false;
+                return;
             }
             if (!chatChannel.isMember(getIdentifier(player))) {
                 player.sendMessage(translate("chat.nochannel"));
-                return false;
+                return;
             }
             format = chatChannel.getActionFormat();
         }
@@ -985,29 +988,29 @@ public class Main extends JavaPlugin implements Listener {
                 getDisplayName(player),
                 getSuffix(player),
                 action);
-        return sendChannelMessage(getIdentifier(player), channelName, action);
+        sendChannelMessage(getIdentifier(player), channelName, action);
     }
 
-    public boolean sendChannelMessage(CommandSender player, String message) {
+    public void sendChannelMessage(CommandSender player, String message) {
         CommandSenderState state = getCommandSenderState(player);
         if (state.getCurrentChannel() == null) {
             player.sendMessage(translate("chat.nochannel"));
-            return false;
+            return;
         }
-        return sendChannelMessage(player, state.getCurrentChannel(), message);
+        sendChannelMessage(player, state.getCurrentChannel(), message);
     }
 
-    public boolean sendChannelMessage(CommandSender player, String channelName, String message) {
+    public void sendChannelMessage(CommandSender player, String channelName, String message) {
         String format;
         synchronized(STATE_LOCK) {
             ChatChannel chatChannel = channels.get(channelName);
             if (chatChannel == null) {
                 player.sendMessage(translate("chat.nochannel"));
-                return false;
+                return;
             }
             if (!chatChannel.isMember(getIdentifier(player))) {
                 player.sendMessage(translate("chat.nochannel"));
-                return false;
+                return;
             }
             format = chatChannel.getMessageFormat();
         }
@@ -1021,17 +1024,15 @@ public class Main extends JavaPlugin implements Listener {
                 getDisplayName(player),
                 getSuffix(player),
                 message);
-        return sendChannelMessage(getIdentifier(player), channelName, message);
+        sendChannelMessage(getIdentifier(player), channelName, message);
     }
 
-    public boolean sendChannelMessage(String playerIdentity, String channelName, String message) {
+    public void sendChannelMessage(String playerIdentity, String channelName, String message) {
         try {
             channel.send(null, new ChannelMessageData(playerIdentity, channelName, message));
-            return true;
         } catch (Exception ex) {
             getLogger().log(Level.WARNING, "Error sending network message", ex);
         }
-        return false;
     }
 
     public void sendMessage(CommandSender from, String to, String message) {
