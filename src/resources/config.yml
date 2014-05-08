@@ -122,9 +122,9 @@ messages:
                 join: '&7%s has joined %s'
                 leave: '&8%s has left %s'
         server:
-                suspect: '&6%s may be having issues'
-                join: '&a%s has joined'
-                leave: '&c%s has left'
+                suspect: '&6&l%s may be having issues'
+                join: '&6&l%s has joined'
+                leave: '&6&l%s has left'
         irc:
                 playerlist:
                         header: '%2$d players playing Minecraft on %1$d servers.'
