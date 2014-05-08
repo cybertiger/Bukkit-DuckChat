@@ -12,6 +12,7 @@ import net.milkbowl.vault.chat.Chat;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.cyberiantiger.minecraft.duckchat.Main;
+import org.cyberiantiger.minecraft.duckchat.irc.ControlCodes;
 
 /**
  *
@@ -53,7 +54,7 @@ public class VaultPlayerTitles implements PlayerTitles {
                 return "";
             }
         }
-        return vaultChat.getPlayerPrefix(player);
+        return vaultChat.getPlayerPrefix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
     }
 
     public String getSuffix(final Player player) {
@@ -64,7 +65,7 @@ public class VaultPlayerTitles implements PlayerTitles {
             Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
                 @Override
                 public String call() throws Exception {
-                    return getPrefix(player);
+                    return getSuffix(player);
                 }
             });
             try {
@@ -77,7 +78,7 @@ public class VaultPlayerTitles implements PlayerTitles {
                 return "";
             }
         }
-        return vaultChat.getPlayerSuffix(player);
+        return vaultChat.getPlayerSuffix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
     }
     
 }
