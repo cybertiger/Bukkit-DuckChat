@@ -51,11 +51,11 @@ public class DuckListener implements Listener {
 
     @EventHandler
     public void onMemberJoin(MemberJoinEvent e) {
-        plugin.getServer().broadcastMessage(plugin.translate("member.join", e.getName(), e.getHost()));
+        plugin.getCommandSenderManager().broadcast(plugin.translate("member.join", e.getName(), e.getHost()));
     }
 
     @EventHandler
     public void onMemberLeave(MemberLeaveEvent e) {
-        plugin.getServer().broadcastMessage(plugin.translate("member.leave", e.getName(), e.getHost()));
+        plugin.getCommandSenderManager().broadcast(plugin.translate("member.leave", e.getName(), e.getHost()));
     }
 }
