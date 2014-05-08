@@ -96,6 +96,13 @@ public class DuckReceiver extends ReceiverAdapter {
 
     @Override
     public void viewAccepted(View view) {
-        state.viewUpdated(view.getCreator(), view.getMembers());
+        state.onViewUpdated(view.getCreator(), view.getMembers());
     }
+
+    @Override
+    public void suspect(Address addr) {
+        state.onSuspect(addr);
+    }
+
+    
 }

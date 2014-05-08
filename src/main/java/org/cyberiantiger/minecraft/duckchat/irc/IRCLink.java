@@ -17,6 +17,9 @@ import org.cyberiantiger.minecraft.duckchat.Main;
 import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
+import org.cyberiantiger.minecraft.duckchat.event.ServerJoinEvent;
+import org.cyberiantiger.minecraft.duckchat.event.ServerLeaveEvent;
+import org.cyberiantiger.minecraft.duckchat.event.ServerSuspectEvent;
 import org.schwering.irc.lib.IRCConnection;
 import org.schwering.irc.lib.IRCEventAdapter;
 import org.schwering.irc.lib.IRCUser;
@@ -62,6 +65,45 @@ public class IRCLink {
                 if (!isConnected())
                     return;
                 String message = plugin.translate("member.leave", e.getName(), e.getHost());
+                message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
+                for (String channel : duckToIrc.values()) {
+                    ircConnection.doPrivmsg(channel, message);
+                }
+            }
+        }
+
+        @EventHandler
+        public void onServerJoin(ServerJoinEvent e) {
+            synchronized (IRCLink.this) {
+                if (!isConnected())
+                    return;
+                String message = plugin.translate("server.join", e.getName());
+                message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
+                for (String channel : duckToIrc.values()) {
+                    ircConnection.doPrivmsg(channel, message);
+                }
+            }
+        }
+
+        @EventHandler
+        public void onServerLeave(ServerLeaveEvent e) {
+            synchronized (IRCLink.this) {
+                if (!isConnected())
+                    return;
+                String message = plugin.translate("server.leave", e.getName());
+                message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
+                for (String channel : duckToIrc.values()) {
+                    ircConnection.doPrivmsg(channel, message);
+                }
+            }
+        }
+
+        @EventHandler
+        public void onServerSuspect(ServerSuspectEvent e) {
+            synchronized (IRCLink.this) {
+                if (!isConnected())
+                    return;
+                String message = plugin.translate("server.suspect", e.getName());
                 message = ControlCodeTranslator.MINECRAFT.translate(message, ControlCodes.IRC, true);
                 for (String channel : duckToIrc.values()) {
                     ircConnection.doPrivmsg(channel, message);

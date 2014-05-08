@@ -23,7 +23,7 @@ public class ServerJoinEvent extends Event {
     private final Address addr;
     private final String name;
     public ServerJoinEvent(Address addr, String name) {
-        super(Main.isServerThread());
+        super(!Main.isServerThread());
         this.addr = addr;
         this.name = name;
     }

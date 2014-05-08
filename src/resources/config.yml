@@ -99,8 +99,8 @@ messages:
         say:
                 usage: '/%s <message>'
         message:
-                sendformat: '[me -> %2$s] %3$s'
-                receiveformat: '[%1$s -> me] %3$s'
+                sendformat: '&6[me -> %2$s]&r %3$s'
+                receiveformat: '&6[%1$s -> me]&r %3$s'
                 echoto: '%2$s'
                 broadcast: '%s'
                 notfound: 'No player called %s found.'
@@ -119,8 +119,12 @@ messages:
         sender:
                 console: '%s@%s'
         member:
-                join: '%s has joined %s'
-                leave: '%s has left %s'
+                join: '&7%s has joined %s'
+                leave: '&8%s has left %s'
+        server:
+                suspect: '&6%s may be having issues'
+                join: '&a%s has joined'
+                leave: '&c%s has left'
         irc:
                 playerlist:
                         header: '%2$d players playing Minecraft on %1$d servers.'

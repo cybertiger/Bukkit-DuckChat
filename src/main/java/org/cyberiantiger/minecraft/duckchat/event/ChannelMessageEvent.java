@@ -29,7 +29,7 @@ public class ChannelMessageEvent extends Event {
     }
 
     public ChannelMessageEvent(String source, String channel, String message) {
-        super (Main.isServerThread());
+        super (!Main.isServerThread());
         this.source = source;
         this.channel = channel;
         this.message = message;

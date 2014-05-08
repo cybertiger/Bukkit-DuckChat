@@ -29,7 +29,7 @@ public class MessageEvent extends Event {
     }
 
     public MessageEvent(String fromIdentifier, String toIdentifier, String message) {
-        super(Main.isServerThread());
+        super(!Main.isServerThread());
         this.fromIdentifier = fromIdentifier;
         this.toIdentifier = toIdentifier;
         this.message = message;

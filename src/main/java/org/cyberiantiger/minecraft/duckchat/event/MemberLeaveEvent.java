@@ -30,7 +30,7 @@ public class MemberLeaveEvent extends Event {
     private String name;
 
     public MemberLeaveEvent(String host, String identifier, String name) {
-        super(Main.isServerThread());
+        super(!Main.isServerThread());
         this.host = host;
         this.identifier = identifier;
         this.name = name;

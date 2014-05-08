@@ -487,4 +487,8 @@ public class Main extends JavaPlugin implements Listener {
             return String.format(messages.get(key), args);
         }
     }
+
+    public String getNodeName(Address addr) {
+        return channel.getName(addr);
+    }
 }

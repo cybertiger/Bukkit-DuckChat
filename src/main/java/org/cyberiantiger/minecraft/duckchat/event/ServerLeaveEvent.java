@@ -23,7 +23,7 @@ public class ServerLeaveEvent extends Event {
     private final Address addr;
     private final String name;
     public ServerLeaveEvent(Address addr, String name) {
-        super(Main.isServerThread());
+        super(!Main.isServerThread());
         this.addr = addr;
         this.name = name;
     }

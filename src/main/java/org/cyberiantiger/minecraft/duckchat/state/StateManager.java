@@ -22,6 +22,7 @@ import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MessageEvent;
 import org.cyberiantiger.minecraft.duckchat.event.ServerJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.event.ServerLeaveEvent;
+import org.cyberiantiger.minecraft.duckchat.event.ServerSuspectEvent;
 import org.jgroups.Address;
 import org.jgroups.util.Util;
 
@@ -142,7 +143,7 @@ public class StateManager {
         }
     }
 
-    void viewUpdated(Address localAddress, List<Address> addresses) {
+    void onViewUpdated(Address localAddress, List<Address> addresses) {
         Map<Address,String> removed = new HashMap<Address,String>();
         Map<Address,String> added = new HashMap<Address,String>();
         synchronized (LOCK) {
@@ -184,21 +185,36 @@ public class StateManager {
             }
             for (Address addr : addresses) {
                 if (!servers.containsKey(addr)) {
-                    String name = servers.get(addr);
+                    String name = plugin.getNodeName(addr);
                     servers.put(addr, name);
                     added.put(addr, name);
                 }
             }
         }
-        // Send events.
-        for (Map.Entry<Address,String> e : added.entrySet()) {
-            ServerJoinEvent event = new ServerJoinEvent(e.getKey(), e.getValue());
-            plugin.getServer().getPluginManager().callEvent(event);
-        }
+        // Send events & broadcast messages.
         for (Map.Entry<Address,String> e : removed.entrySet()) {
             ServerLeaveEvent event = new ServerLeaveEvent(e.getKey(), e.getValue());
             plugin.getServer().getPluginManager().callEvent(event);
+            plugin.getCommandSenderManager().broadcast(
+                    plugin.translate("server.leave", e.getValue()));
         }
+        for (Map.Entry<Address,String> e : added.entrySet()) {
+            ServerJoinEvent event = new ServerJoinEvent(e.getKey(), e.getValue());
+            plugin.getServer().getPluginManager().callEvent(event);
+            plugin.getCommandSenderManager().broadcast(
+                    plugin.translate("server.join", e.getValue()));
+        }
+    }
+
+    void onSuspect(Address addr) {
+        String name;
+        synchronized(LOCK) {
+            name = servers.get(addr);
+        }
+        ServerSuspectEvent event = new ServerSuspectEvent(addr,name);
+        plugin.getServer().getPluginManager().callEvent(event);
+        plugin.getCommandSenderManager().broadcast(
+                plugin.translate("server.suspect", name));
     }
 
     void onMemberCreate(Address addr, String identifier, String name, BitSet flags) {
