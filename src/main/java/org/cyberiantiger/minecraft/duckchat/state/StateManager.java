@@ -117,8 +117,10 @@ public class StateManager {
     void set(InputStream in) throws Exception {
         DataInputStream dataIn = new DataInputStream(in);
         synchronized (LOCK) {
+            Map<Address,String> remoteServers = (Map<Address,String>) Util.objectFromStream(dataIn);
             List<Member> memberList = (List<Member>) Util.objectFromStream(dataIn);
             List<ChatChannel> channelList = (List<ChatChannel>) Util.objectFromStream(dataIn);
+            servers.putAll(remoteServers);
             for (Member m : memberList) {
                 // These should never be local.
                 members.put(m.getIdentifier(), m);
@@ -144,6 +146,7 @@ public class StateManager {
             List<ChatChannel> channelList = new ArrayList<ChatChannel>(channels.size());
             memberList.addAll(members.values());
             channelList.addAll(channels.values());
+            Util.objectToStream(servers, dataOut);
             Util.objectToStream(memberList, dataOut);
             Util.objectToStream(channelList, dataOut);
         }

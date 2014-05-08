@@ -235,8 +235,7 @@ public class Main extends JavaPlugin implements Listener {
             connect();
         } catch (Exception ex) {
             getLogger().log(Level.SEVERE, "Failed to open channel", ex);
-            getPluginLoader().disablePlugin(this);
-            return;
+            disconnect();
         }
         getServer().getScheduler().runTask(this, new Runnable() {
             @Override
