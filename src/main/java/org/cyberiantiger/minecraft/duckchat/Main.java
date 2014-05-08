@@ -50,6 +50,7 @@ import org.cyberiantiger.minecraft.duckchat.message.MemberDeleteData;
 import org.cyberiantiger.minecraft.duckchat.message.MemberUpdateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelPartData;
 import org.cyberiantiger.minecraft.duckchat.message.MessageData;
+import org.cyberiantiger.minecraft.duckchat.message.ServerCreateData;
 import org.cyberiantiger.minecraft.duckchat.state.StateManager;
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -124,6 +125,8 @@ public class Main extends JavaPlugin implements Listener {
         channel.connect(clusterName);
         getState().setLocalAddress(channel.getAddress());
         channel.getState(null, 0);
+
+        sendServerCreate();
         
         // Register our players.
         for (Player player : getServer().getOnlinePlayers()) {
@@ -346,6 +349,14 @@ public class Main extends JavaPlugin implements Listener {
             return result;
         }
         return null;
+    }
+
+    public void sendServerCreate() {
+        try {
+            channel.send(null, new ServerCreateData(channel.getName()));
+        } catch (Exception ex) {
+            getLogger().log(Level.WARNING, "Error sending network message", ex);
+        }
     }
 
     public void sendMemberCreate(CommandSender player) {

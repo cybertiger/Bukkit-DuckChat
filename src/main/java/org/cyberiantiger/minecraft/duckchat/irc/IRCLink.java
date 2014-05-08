@@ -100,6 +100,7 @@ public class IRCLink {
 
         @EventHandler
         public void onServerSuspect(ServerSuspectEvent e) {
+            /* Too spammy.
             synchronized (IRCLink.this) {
                 if (!isConnected())
                     return;
@@ -109,6 +110,7 @@ public class IRCLink {
                     ircConnection.doPrivmsg(channel, message);
                 }
             }
+            */
         }
     };
     private final IRCEventAdapter ircEventAdapter = new IRCEventAdapter() {

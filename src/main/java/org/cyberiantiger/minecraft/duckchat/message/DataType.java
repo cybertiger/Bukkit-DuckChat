@@ -9,6 +9,7 @@ package org.cyberiantiger.minecraft.duckchat.message;
  * @author antony
  */
 public enum DataType {
+    SERVER_CREATE,
     MEMBER_CREATE,
     MEMBER_UPDATE,
     MEMBER_DELETE,
