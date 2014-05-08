@@ -7,9 +7,7 @@ package org.cyberiantiger.minecraft.duckchat.command;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.CommandSenderState;
 
 /**
  *
@@ -24,7 +22,7 @@ public class ChannelListSubCommand extends SubCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String... args) {
         if (args.length == 1) {
-            return plugin.getChannelCompletions(sender, args[0]);
+            return plugin.getState().getChannelCompletions(plugin.getCommandSenderManager().getIdentifier(sender), args[0]);
         } else {
             return null;
         }
@@ -35,19 +33,19 @@ public class ChannelListSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.channellist")) {
             throw new PermissionException("duckchat.channellist");
         }
-        CommandSenderState state = plugin.getCommandSenderState(sender);
-        if (state == null) {
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
+        if (identifier == null) {
             throw new SenderTypeException();
         }
         String channel;
         if (args.length == 0) {
-            channel = state.getCurrentChannel();
-            if (!plugin.getAvailableChannels(sender).contains(channel)) {
+            channel = plugin.getCommandSenderManager().getCurrentChannel(sender);
+            if (!plugin.getState().getAvailableChannels(identifier).contains(channel)) {
                 sender.sendMessage(plugin.translate("channellist.notfound", channel));
                 return;
             }
         } else if (args.length == 1) {
-            channel = findIgnoringCase(args[0], plugin.getAvailableChannels(sender));
+            channel = findIgnoringCase(args[0], plugin.getState().getAvailableChannels(identifier));
             if (channel == null) {
                 sender.sendMessage(plugin.translate("channellist.notfound", args[0]));
                 return;
@@ -55,7 +53,7 @@ public class ChannelListSubCommand extends SubCommand {
         } else {
             throw new UsageException();
         }
-        List<String> members = plugin.getMembers(channel);
+        List<String> members = plugin.getState().getMembers(channel);
         Collections.sort(members);
         StringBuilder memberList = new StringBuilder();
         for (int i = 0; i < members.size(); i++) {

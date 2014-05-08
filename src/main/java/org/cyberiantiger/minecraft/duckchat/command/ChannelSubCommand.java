@@ -6,9 +6,7 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.CommandSenderState;
 
 /**
  *
@@ -25,20 +23,19 @@ public class ChannelSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.channel")) {
             throw new PermissionException("duckchat.channel");
         }
-        CommandSenderState state = plugin.getCommandSenderState(sender);
-        if (state == null) {
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
+        if (identifier == null) {
             throw new SenderTypeException();
         }
-        CommandSenderState playerState = plugin.getCommandSenderState(sender);
         if (args.length == 0) {
-            String currentChannel = playerState.getCurrentChannel();
+            String currentChannel = plugin.getCommandSenderManager().getCurrentChannel(sender);
             sender.sendMessage(plugin.translate("channel.current", currentChannel));
         } else if (args.length == 1) {
-            String nextChannel = findIgnoringCase(args[0], plugin.getChannels(sender));
+            String nextChannel = findIgnoringCase(args[0], plugin.getState().getChannels(identifier));
             if (nextChannel == null) {
                 sender.sendMessage(plugin.translate("channel.notfound", args[0]));
             } else {
-                playerState.setCurrentChannel(nextChannel);
+                plugin.getCommandSenderManager().setCurrentChannel(sender, nextChannel);
                 sender.sendMessage(plugin.translate("channel.success", nextChannel));
             }
         } else {
@@ -53,8 +50,9 @@ public class ChannelSubCommand extends SubCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String... args) {
-        if (args.length == 1) {
-            return plugin.getChannelCompletions(sender, args[0]);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
+        if (args.length == 1 && identifier != null) {
+            return plugin.getState().getChannelCompletions(identifier, args[0]);
         } else {
             return null;
         }

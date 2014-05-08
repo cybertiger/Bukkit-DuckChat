@@ -21,7 +21,7 @@ public class MessageSubCommand extends SubCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String... args) {
         if (args.length == 1) {
-            return plugin.getPlayerCompletions(args[0]);
+            return plugin.getState().getPlayerCompletions(args[0]);
         } else {
             return null;
         }
@@ -32,7 +32,7 @@ public class MessageSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.message")) {
             throw new PermissionException("duckchat.message");
         }
-        String senderIdentifier = plugin.getIdentifier(sender);
+        String senderIdentifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (senderIdentifier == null) {
             throw new SenderTypeException();
         }
@@ -40,7 +40,7 @@ public class MessageSubCommand extends SubCommand {
             throw new UsageException();
         } else {
             String target = args[0];
-            String identifier = plugin.findPlayerIdentifier(target);
+            String identifier = plugin.getState().findPlayerIdentifier(target);
             if (identifier == null) {
                 sender.sendMessage(plugin.translate("message.notfound", args[0]));
                 return;

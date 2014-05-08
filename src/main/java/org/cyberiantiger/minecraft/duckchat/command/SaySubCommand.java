@@ -28,7 +28,7 @@ public class SaySubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.say")) {
             throw new PermissionException("duckchat.say");
         }
-        String identifier = plugin.getIdentifier(sender);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();
         }
@@ -46,6 +46,4 @@ public class SaySubCommand extends SubCommand {
     public String getName() {
         return "say";
     }
-    
-    
 }

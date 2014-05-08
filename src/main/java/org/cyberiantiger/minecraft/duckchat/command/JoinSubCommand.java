@@ -6,7 +6,6 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
@@ -24,17 +23,17 @@ public class JoinSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.join")) {
             throw new PermissionException("duckchat.join");
         }
-        String identifier = plugin.getIdentifier(sender);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();
         }
         if (args.length == 1) {
-            String channel = findIgnoringCase(args[0],plugin.getAvailableChannels(sender));
+            String channel = findIgnoringCase(args[0],plugin.getState().getAvailableChannels(identifier));
             if (channel == null) {
                 sender.sendMessage(plugin.translate("join.nochannel", args[0]));
                 return;
             }
-            if (plugin.getChannels(sender).contains(channel)) {
+            if (plugin.getState().getChannels(identifier).contains(channel)) {
                 sender.sendMessage(plugin.translate("join.membership", channel));
                 return;
             }
@@ -52,8 +51,9 @@ public class JoinSubCommand extends SubCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String... args) {
-        if (args.length == 1) {
-            return plugin.getChannelCompletions(sender, args[0]);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
+        if (args.length == 1 && identifier != null) {
+            return plugin.getState().getChannelCompletions(identifier, args[0]);
         } else {
             return null;
         }

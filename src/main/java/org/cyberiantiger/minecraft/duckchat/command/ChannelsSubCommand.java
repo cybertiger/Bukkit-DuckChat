@@ -23,12 +23,12 @@ public class ChannelsSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.channels")) {
             throw new PermissionException("duckchat.channels");
         }
-        String identifier = plugin.getIdentifier(sender);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();
         }
-        List<String> available = plugin.getAvailableChannels(sender);
-        List<String> joined = plugin.getChannels(sender);
+        List<String> available = plugin.getState().getAvailableChannels(identifier);
+        List<String> joined = plugin.getState().getChannels(identifier);
         Collections.sort(available, String.CASE_INSENSITIVE_ORDER);
         sender.sendMessage(plugin.translate("channels.header"));
         for (String channelName : available) {
@@ -50,5 +50,4 @@ public class ChannelsSubCommand extends SubCommand {
     public List<String> onTabComplete(CommandSender sender, String... args) {
         return null;
     }
-    
 }

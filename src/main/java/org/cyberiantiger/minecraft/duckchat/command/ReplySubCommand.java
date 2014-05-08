@@ -30,18 +30,18 @@ public class ReplySubCommand extends SubCommand {
             throw new PermissionException("duckchat.reply");
         }
         // Sender
-        String senderIdentifier = plugin.getIdentifier(sender);
+        String senderIdentifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (senderIdentifier == null) {
             throw new SenderTypeException();
         }
         // Has current reply address.
-        String replyAddress = plugin.getReplyAddress(sender);
+        String replyAddress = plugin.getCommandSenderManager().getReplyAddress(sender);
         if (replyAddress == null) {
             sender.sendMessage(plugin.translate("reply.notfound"));
             return;
         }
         if (args.length == 0) {
-            sender.sendMessage(plugin.translate("reply.address", plugin.getPlayerName(replyAddress)));
+            sender.sendMessage(plugin.translate("reply.address", plugin.getState().getPlayerName(replyAddress)));
         } else {
             StringBuilder message = new StringBuilder();
             for (int i = 0; i < args.length; i++) {

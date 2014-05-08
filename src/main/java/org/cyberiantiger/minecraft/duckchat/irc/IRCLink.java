@@ -79,7 +79,7 @@ public class IRCLink {
                         msg = ControlCodeTranslator.IRC.translate(msg, ControlCodes.MINECRAFT, true);
                         IRCLink.this.plugin.sendChannelMessage(IRC_CLIENT_IDENTITY, targetChannel, String.format(IRCLink.this.actionFormat, user, msg));
                     } else if (msg.equals(".players")) {
-                        Map<String, List<String>> players = plugin.getPlayersByServer(true);
+                        Map<String, List<String>> players = plugin.getState().getPlayersByServer(true);
                         List<String> servers = new ArrayList<String>(players.size());
                         servers.addAll(players.keySet());
                         Collections.sort(servers, String.CASE_INSENSITIVE_ORDER);

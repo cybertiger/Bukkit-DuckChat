@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.cyberiantiger.minecraft.duckchat;
+package org.cyberiantiger.minecraft.duckchat.state;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,10 +28,10 @@ import org.jgroups.View;
  */
 public class DuckReceiver extends ReceiverAdapter {
 
-    private final Main plugin;
+    private final StateManager state;
 
-    public DuckReceiver(Main plugin) {
-        this.plugin = plugin;
+    public DuckReceiver(StateManager state) {
+        this.state = state;
     }
 
     @Override
@@ -42,43 +42,43 @@ public class DuckReceiver extends ReceiverAdapter {
             switch (data.getType()) {
                 case MEMBER_CREATE:
                     MemberCreateData memberCreateData = (MemberCreateData) data;
-                    plugin.onCreateMember(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
+                    state.onMemberCreate(src, memberCreateData.getIdentifier(), memberCreateData.getName(), memberCreateData.getFlags());
                     break;
                 case MEMBER_UPDATE:
                     MemberUpdateData memberUpdateData = (MemberUpdateData) data;
-                    plugin.onUpdateMember(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
+                    state.onMemberUpdate(memberUpdateData.getIdentifier(), memberUpdateData.getFlags());
                     break;
                 case MEMBER_DELETE:
                     MemberDeleteData memberDeleteData = (MemberDeleteData) data;
-                    plugin.deleteMember(src, memberDeleteData.getIdentifier());
+                    state.onMemberDelete(src, memberDeleteData.getIdentifier());
                     break;
                 case CHANNEL_CREATE:
                     ChannelCreateData channelCreateData = (ChannelCreateData) data;
-                    plugin.createChannel(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission());
+                    state.onChannelCreate(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission());
                     break;
                 case CHANNEL_UPDATE:
                     ChannelUpdateData channelModifyData = (ChannelUpdateData) data;
-                    plugin.updateChannel(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission());
+                    state.onChannelUpdate(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission());
                     break;
                 case CHANNEL_DELETE:
                     ChannelDeleteData channelDeleteData = (ChannelDeleteData) data;
-                    plugin.deleteChannel(channelDeleteData.getName());
+                    state.onChannelDelete(channelDeleteData.getName());
                     break;
                 case CHANNEL_JOIN:
                     ChannelJoinData channelJoinData = (ChannelJoinData) data;
-                    plugin.joinChannel(channelJoinData.getChannel(), channelJoinData.getIdentifier());
+                    state.onChannelJoin(channelJoinData.getChannel(), channelJoinData.getIdentifier());
                     break;
                 case CHANNEL_PART:
                     ChannelPartData channelPartData = (ChannelPartData) data;
-                    plugin.partChannel(channelPartData.getChannel(), channelPartData.getIdentifier());
+                    state.onChannelPart(channelPartData.getChannel(), channelPartData.getIdentifier());
                     break;
                 case CHANNEL_MESSAGE:
                     ChannelMessageData channelMessageData = (ChannelMessageData) data;
-                    plugin.messageChannel(channelMessageData.getChannel(), channelMessageData.getIdentifier(), channelMessageData.getMessage());
+                    state.onChannelMessage(channelMessageData.getChannel(), channelMessageData.getIdentifier(), channelMessageData.getMessage());
                     break;
                 case MESSAGE:
                     MessageData messageData = (MessageData) data;
-                    plugin.message(messageData.getFrom(), messageData.getTo(), messageData.getMessage());
+                    state.onMessage(messageData.getFrom(), messageData.getTo(), messageData.getMessage());
                     break;
             }
         }
@@ -86,17 +86,16 @@ public class DuckReceiver extends ReceiverAdapter {
 
     @Override
     public void setState(InputStream input) throws Exception {
-        plugin.setState(input);
+        state.set(input);
     }
 
     @Override
     public void getState(OutputStream output) throws Exception {
-        plugin.getState(output);
+        state.get(output);
     }
 
     @Override
     public void viewAccepted(View view) {
-        // TODO: Netsplit - this only deals with the naive case of a single node joining.
-        plugin.viewUpdated(view.getMembers());
+        state.viewUpdated(view.getCreator(), view.getMembers());
     }
 }

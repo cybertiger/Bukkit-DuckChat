@@ -6,7 +6,6 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
@@ -24,7 +23,7 @@ public class MeSubCommand extends SubCommand {
         if (!sender.hasPermission("duckchat.me")) {
             throw new PermissionException("duckchat.me");
         }
-        String identifier = plugin.getIdentifier(sender);
+        String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();
         }

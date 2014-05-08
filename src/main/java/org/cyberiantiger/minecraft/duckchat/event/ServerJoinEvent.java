@@ -7,44 +7,37 @@ package org.cyberiantiger.minecraft.duckchat.event;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.cyberiantiger.minecraft.duckchat.Main;
+import org.jgroups.Address;
 
 /**
  *
  * @author antony
  */
-public class MemberLeaveEvent extends Event {
-
+public class ServerJoinEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
-
+    
     public static HandlerList getHandlerList() {
         return handlers;
+    }
+
+    private final Address addr;
+    private final String name;
+    public ServerJoinEvent(Address addr, String name) {
+        super(Main.isServerThread());
+        this.addr = addr;
+        this.name = name;
+    }
+
+    public Address getAddr() {
+        return addr;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     public HandlerList getHandlers() {
         return handlers;
-    }
-
-    private String host;
-    private String identifier;
-    private String name;
-
-    public MemberLeaveEvent(String host, String identifier, String name) {
-        super(Main.isServerThread());
-        this.host = host;
-        this.identifier = identifier;
-        this.name = name;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public String getName() {
-        return name;
     }
 }

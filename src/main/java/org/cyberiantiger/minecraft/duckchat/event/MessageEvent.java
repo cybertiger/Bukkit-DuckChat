@@ -12,11 +12,11 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class ChannelMessageEvent extends Event {
+public class MessageEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
-    private final String source;
-    private final String channel;
+    private final String fromIdentifier;
+    private final String toIdentifier;
     private final String message;
 
     public static HandlerList getHandlerList() {
@@ -28,19 +28,19 @@ public class ChannelMessageEvent extends Event {
         return handlers;
     }
 
-    public ChannelMessageEvent(String source, String channel, String message) {
-        super (Main.isServerThread());
-        this.source = source;
-        this.channel = channel;
+    public MessageEvent(String fromIdentifier, String toIdentifier, String message) {
+        super(Main.isServerThread());
+        this.fromIdentifier = fromIdentifier;
+        this.toIdentifier = toIdentifier;
         this.message = message;
     }
 
-    public String getSource() {
-        return source;
+    public String getFromIdentifier() {
+        return fromIdentifier;
     }
 
-    public String getChannel() {
-        return channel;
+    public String getToIdentifier() {
+        return toIdentifier;
     }
 
     public String getMessage() {

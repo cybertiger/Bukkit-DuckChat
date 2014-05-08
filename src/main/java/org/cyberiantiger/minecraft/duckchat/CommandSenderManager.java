@@ -1,0 +1,359 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.cyberiantiger.minecraft.duckchat;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.metadata.MetadataValueAdapter;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
+
+/**
+ *
+ * @author antony
+ */
+public class CommandSenderManager {
+    private static final String REPLY_ADDRESS = "duckchat.replyAddress";
+    private static final String CURRENT_CHANNEL = "duckchat.currentChannel";
+
+    private final Main plugin;
+
+    public CommandSenderManager(Main plugin) {
+        this.plugin = plugin;
+    }
+
+    public String getIdentifier(CommandSender player) {
+        if (player instanceof Player) {
+            if (plugin.useUUIDs()) {
+                return ((Player)player).getUniqueId().toString();
+            } else {
+                return player.getName();
+            }
+        } else if (player instanceof ConsoleCommandSender) {
+            return "dc:console:" + plugin.getState().getLocalAddress();
+        }
+        return null;
+    }
+    
+    public CommandSender getPlayer(String identifier) {
+        if (identifier == null) {
+            return null;
+        } else if (identifier.startsWith("dc:")) {
+            if (identifier.equals("dc:console:" + plugin.getState().getLocalNodeName())) {
+                return plugin.getServer().getConsoleSender();
+            } else {
+                return null;
+            }
+        } else {
+            if (plugin.useUUIDs()) {
+                return plugin.getServer().getPlayer(UUID.fromString(identifier));
+            } else {
+                return plugin.getServer().getPlayer(identifier);
+            }
+        }
+    }
+
+    public String getName(CommandSender sender) {
+        if (sender instanceof ConsoleCommandSender) {
+            return plugin.translate("sender.console", sender.getName(), plugin.getState().getLocalNodeName());
+        }
+        return sender.getName();
+    }
+
+    public String getDisplayName(CommandSender sender) {
+        if (sender instanceof Player) {
+            return getDisplayName((Player)sender);
+        }
+        return getName(sender);
+    }
+
+    public String getDisplayName(final Player player) {
+        if (!Main.isServerThread()) {
+            Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return getDisplayName(player);
+                }
+            });
+            try {
+                return callSyncMethod.get();
+            } catch (InterruptedException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return "";
+            } catch (ExecutionException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return "";
+            }
+            
+        }
+        return player.getDisplayName();
+    }
+
+    public String getWorld(CommandSender sender) {
+        if (sender instanceof Player) {
+            return getWorld((Player)sender);
+        }
+        return "";
+    }
+
+    public String getWorld(final Player sender) {
+        if (!Main.isServerThread()) {
+            Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return getWorld(sender);
+                }
+            });
+            try {
+                return callSyncMethod.get();
+            } catch (InterruptedException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return "";
+            } catch (ExecutionException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return "";
+            }
+            
+        }
+        return sender.getWorld().getName();
+    }
+    
+    public String getPrefix(CommandSender sender) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            return plugin.getPlayerTitles().getPrefix(player);
+        }
+        return "";
+    }
+
+    public String getSuffix(CommandSender sender) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            return plugin.getPlayerTitles().getSuffix(player);
+        }
+        return "";
+    }
+
+    public boolean hasPermission(String identifier, String permission) {
+        return hasPermission(getPlayer(identifier), permission);
+    }
+
+    public boolean hasPermission(final CommandSender sender, final String permission) {
+        if (!Main.isServerThread()) {
+            Future<Boolean> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return hasPermission(sender, permission);
+                }
+            });
+            try {
+                return callSyncMethod.get();
+            } catch (InterruptedException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return false;
+            } catch (ExecutionException ex) {
+                plugin.getLogger().log(Level.WARNING, null, ex);
+                return false;
+            }
+            
+        }
+        return sender.hasPermission(permission);
+    }
+
+    public void registerPermission(final String permission) {
+        if (!plugin.getRegisterPermissions()) {
+            return;
+        }
+        if (permission == null) {
+            return;
+        }
+        if (!Main.isServerThread()) {
+            plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    registerPermission(permission);
+                }
+            });
+            return;
+        }
+        Permission perm = plugin.getServer().getPluginManager().getPermission(permission);
+        if (perm == null) {
+            Permission permObj = new Permission(permission, null, PermissionDefault.OP);
+            plugin.getServer().getPluginManager().addPermission(permObj);
+            permObj.recalculatePermissibles();
+        }
+    }
+
+    public void sendMessage(final String identifier, final String message) {
+        final CommandSender sender = getPlayer(identifier);
+        sendMessage(sender, message);
+    }
+
+    public void sendMessage(final CommandSender sender, final String message) {
+        if (sender instanceof Player) {
+            // This is threadsafe, or close enough.
+            ((Player)sender).sendRawMessage(message);
+        } else if (sender instanceof ConsoleCommandSender) {
+            // So is this.
+            ((ConsoleCommandSender)sender).sendRawMessage(message);
+        } else {
+            if (sender == null) {
+                return;
+            }
+            if (Main.isServerThread()) {
+                sender.sendMessage(message);
+            } else {
+                plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        // This definitely is not.
+                        sender.sendMessage(message);
+                    }
+                });
+            }
+        }
+    }
+
+
+    public void setReplyAddress(final String target, final String replyTo) {
+        final CommandSender sender = getPlayer(target);
+        if (sender instanceof Metadatable) {
+            if (Main.isServerThread()) {
+                // Fuck the metadata API and the horse it rode in on.
+                Metadatable m = (Metadatable) sender;
+                m.setMetadata(REPLY_ADDRESS, new MetadataValueAdapter(plugin) {
+                    @Override
+                    public Object value() {
+                        return replyTo;
+                    }
+                    
+                    @Override
+                    public void invalidate() {}
+                });
+            } else {
+                plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setReplyAddress(target, replyTo);
+                    }
+                });
+            }
+        }
+    }
+
+    public String getReplyAddress(final String target) {
+        final CommandSender sender = getPlayer(target);
+        return sender == null ? null : getReplyAddress(sender);
+    }
+
+    public String getReplyAddress(final CommandSender target) {
+        if (target instanceof Metadatable) {
+            if (Main.isServerThread()) {
+                // Fuck the metadata API and the horse it rode in on.
+                Metadatable m = (Metadatable) target;
+                if (m.hasMetadata(REPLY_ADDRESS)) {
+                    List<MetadataValue> metadata = m.getMetadata(REPLY_ADDRESS);
+                    return metadata.get(0).asString();
+                }
+            } else {
+                Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
+
+                    @Override
+                    public String call() throws Exception {
+                        return getReplyAddress(target);
+                    }
+                });
+                try {
+                    return callSyncMethod.get();
+                } catch (InterruptedException ex) {
+                    plugin.getLogger().log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    plugin.getLogger().log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void broadcast(final String message) {
+        if (Main.isServerThread()) {
+            plugin.getServer().broadcastMessage(message);
+        } else {
+            plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+
+                @Override
+                public void run() {
+                    broadcast(message);
+                }
+            });
+        }
+    }
+
+    public void setCurrentChannel(final CommandSender sender, final String channel) {
+        if (sender instanceof Metadatable) {
+            if (Main.isServerThread()) {
+                // Fuck the metadata API and the horse it rode in on.
+                Metadatable m = (Metadatable) sender;
+                m.setMetadata(REPLY_ADDRESS, new MetadataValueAdapter(plugin) {
+                    @Override
+                    public Object value() {
+                        return channel;
+                    }
+                    
+                    @Override
+                    public void invalidate() {}
+                });
+            } else {
+                plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setCurrentChannel(sender, channel);
+                    }
+                });
+            }
+        }
+    }
+
+    public String getCurrentChannel(final CommandSender sender) {
+        if (sender instanceof Metadatable) {
+            if (Main.isServerThread()) {
+                // Fuck the metadata API and the horse it rode in on.
+                Metadatable m = (Metadatable) sender;
+                if (m.hasMetadata(CURRENT_CHANNEL)) {
+                    List<MetadataValue> metadata = m.getMetadata(CURRENT_CHANNEL);
+                    return metadata.get(0).asString();
+                }
+            } else {
+                Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
+
+                                                    @Override
+                                                    public String call() throws Exception {
+                                                        return getCurrentChannel(sender);
+                                                    }
+                                                });
+                try {
+                    return callSyncMethod.get();
+                } catch (InterruptedException ex) {
+                    plugin.getLogger().log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    plugin.getLogger().log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return null;
+    }
+}
