@@ -96,7 +96,7 @@ public class DuckReceiver extends ReceiverAdapter {
 
     @Override
     public void viewAccepted(View view) {
-        state.onViewUpdated(view.getCreator(), view.getMembers());
+        state.onViewUpdated(view.getMembers());
     }
 
     @Override

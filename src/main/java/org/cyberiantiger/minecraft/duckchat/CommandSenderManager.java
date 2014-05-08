@@ -9,8 +9,8 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -226,9 +226,15 @@ public class CommandSenderManager {
         }
     }
 
+    private final AtomicReference<String> consoleReplyAddress = 
+            new AtomicReference<String>(null);
 
     public void setReplyAddress(final String target, final String replyTo) {
         final CommandSender sender = getPlayer(target);
+        if (sender != null) setReplyAddress(sender, replyTo);
+    }
+
+    public void setReplyAddress(final CommandSender sender, final String replyTo) {
         if (sender instanceof Metadatable) {
             if (Main.isServerThread()) {
                 // Fuck the metadata API and the horse it rode in on.
@@ -247,10 +253,12 @@ public class CommandSenderManager {
 
                     @Override
                     public void run() {
-                        setReplyAddress(target, replyTo);
+                        setReplyAddress(sender, replyTo);
                     }
                 });
             }
+        } else if (sender instanceof ConsoleCommandSender) {
+            consoleReplyAddress.set(replyTo);
         }
     }
 
@@ -284,6 +292,8 @@ public class CommandSenderManager {
                     plugin.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
+        } else if (target instanceof ConsoleCommandSender) {
+            return consoleReplyAddress.get();
         }
         return null;
     }
@@ -301,6 +311,9 @@ public class CommandSenderManager {
             });
         }
     }
+
+    private final AtomicReference<String> consoleCurrentChannel = 
+            new AtomicReference<String>(null);
 
     public void setCurrentChannel(final CommandSender sender, final String channel) {
         if (sender instanceof Metadatable) {
@@ -325,6 +338,8 @@ public class CommandSenderManager {
                     }
                 });
             }
+        } else if (sender instanceof ConsoleCommandSender) {
+            consoleCurrentChannel.set(channel);
         }
     }
 
@@ -335,16 +350,19 @@ public class CommandSenderManager {
                 Metadatable m = (Metadatable) sender;
                 if (m.hasMetadata(CURRENT_CHANNEL)) {
                     List<MetadataValue> metadata = m.getMetadata(CURRENT_CHANNEL);
-                    return metadata.get(0).asString();
+                    String result = metadata.get(0).asString();
+                    if (result != null) {
+                        return result;
+                    }
                 }
             } else {
                 Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
-
-                                                    @Override
-                                                    public String call() throws Exception {
-                                                        return getCurrentChannel(sender);
-                                                    }
-                                                });
+                    
+                    @Override
+                    public String call() throws Exception {
+                        return getCurrentChannel(sender);
+                    }
+                });
                 try {
                     return callSyncMethod.get();
                 } catch (InterruptedException ex) {
@@ -353,7 +371,11 @@ public class CommandSenderManager {
                     plugin.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
+        } else if (sender instanceof ConsoleCommandSender) {
+            String result = consoleCurrentChannel.get();
+            return result == null ? plugin.getDefaultChannel() : result;
+
         }
-        return null;
+        return plugin.getDefaultChannel();
     }
 }

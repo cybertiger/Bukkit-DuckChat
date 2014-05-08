@@ -31,7 +31,7 @@ import org.jgroups.util.Util;
  * @author antony
  */
 public class StateManager {
-    private final Main plugin;
+    final Main plugin;
 
     // Local server address.
     private Address localAddress = null;
@@ -82,6 +82,12 @@ public class StateManager {
         synchronized (LOCK) {
             members.clear();
             channels.clear();
+        }
+    }
+
+    public void setLocalAddress(Address localAddress) {
+        synchronized (LOCK) {
+            this.localAddress = localAddress;
         }
     }
 
@@ -143,12 +149,10 @@ public class StateManager {
         }
     }
 
-    void onViewUpdated(Address localAddress, List<Address> addresses) {
+    void onViewUpdated(List<Address> addresses) {
         Map<Address,String> removed = new HashMap<Address,String>();
         Map<Address,String> added = new HashMap<Address,String>();
         synchronized (LOCK) {
-            // Cache local address.
-            this.localAddress = localAddress;
             // Remove stale members entries.
             Iterator<Map.Entry<String, Member>> i2 = members.entrySet().iterator();
             while (i2.hasNext()) {
@@ -348,7 +352,6 @@ public class StateManager {
     void onChannelMessage(String channel, String identifier, String message) {
         ChannelMessageEvent channelMessageEvent = new ChannelMessageEvent(identifier, channel, message);
         plugin.getServer().getPluginManager().callEvent(channelMessageEvent);
-        // Move to event handler.
         synchronized (LOCK) {
             ChatChannel chatChannel = channels.get(channel);
             Address localAddress = getLocalAddress();
@@ -356,7 +359,7 @@ public class StateManager {
                 for (Member dest : chatChannel.getMembers()) {
                     if (dest.getAddress().equals(localAddress)) {
                         // XXX: Release lock first.
-                        plugin.getCommandSenderManager().sendMessage(identifier, message);
+                        plugin.getCommandSenderManager().sendMessage(dest.getIdentifier(), message);
                     }
                 }
             }

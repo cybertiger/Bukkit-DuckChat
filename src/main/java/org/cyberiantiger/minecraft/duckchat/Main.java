@@ -122,6 +122,7 @@ public class Main extends JavaPlugin implements Listener {
         }
         channel.setReceiver(new DuckReceiver(getState()));
         channel.connect(clusterName);
+        getState().setLocalAddress(channel.getAddress());
         channel.getState(null, 0);
         
         // Register our players.
