@@ -49,33 +49,62 @@ public class StateManager {
         this.plugin = plugin;
     }
 
-    // Must call with LOCK held.
-    private void performAutoJoins(ChatChannel chatChannel) {
+    // Must be called with LOCK held.
+    private List<Runnable> performAutoJoins(ChatChannel chatChannel) {
+        List<Runnable> actions = new ArrayList<Runnable>();
         Address local = getLocalAddress();
         for (Member m : members.values()) {
             if (local.equals(m.getAddress())) {
                 if (chatChannel.isAutoJoin(m)) {
                     // XXX: Should not call out with lock held.
-                    if (chatChannel.getPermission() == null || plugin.getCommandSenderManager().hasPermission(m.getIdentifier(), chatChannel.getPermission())) {
+                    
+                    if (chatChannel.getPermission() == null) {
                         plugin.sendJoinChannel(chatChannel.getName(), m.getIdentifier());
+                    } else {
+                        final String channelName = chatChannel.getName();
+                        final String permission = chatChannel.getPermission();
+                        final String identifier = m.getIdentifier();
+                        actions.add(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(plugin.getCommandSenderManager().hasPermission(identifier, permission)) {
+                                    plugin.sendJoinChannel(channelName, identifier);
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
+        return actions;
     }
 
-    // Must call with LOCK held.
-    private void performAutoJoins(Member m) {
+    // Must not be called with LOCK held.
+    private List<Runnable> performAutoJoins(Member m) {
+        List<Runnable> actions = new ArrayList<Runnable>();
         if (getLocalAddress().equals(m.getAddress())) {
             for (ChatChannel chatChannel : channels.values()) {
                 if (chatChannel.isAutoJoin(m)) {
                     // XXX: Should not call out with lock held.
-                    if (chatChannel.getPermission() == null || plugin.getCommandSenderManager().hasPermission(m.getIdentifier(), chatChannel.getPermission())) {
+                    if (chatChannel.getPermission() == null) {
                         plugin.sendJoinChannel(chatChannel.getName(), m.getIdentifier());
+                    } else {
+                        final String channelName = chatChannel.getName();
+                        final String permission = chatChannel.getPermission();
+                        final String identifier = m.getIdentifier();
+                        actions.add(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(plugin.getCommandSenderManager().hasPermission(identifier, permission)) {
+                                    plugin.sendJoinChannel(channelName, identifier);
+                                }
+                            }
+                        });
                     }
                 }
             }
         }
+        return actions;
     }
 
     public void clear() {
@@ -116,6 +145,7 @@ public class StateManager {
 
     void set(InputStream in) throws Exception {
         DataInputStream dataIn = new DataInputStream(in);
+        List<Runnable> actions = new ArrayList<Runnable>();
         synchronized (LOCK) {
             Map<Address,String> remoteServers = (Map<Address,String>) Util.objectFromStream(dataIn);
             List<Member> memberList = (List<Member>) Util.objectFromStream(dataIn);
@@ -133,9 +163,12 @@ public class StateManager {
                         c.addMember(m);
                     }
                 } else {
-                    performAutoJoins(c);
+                    actions.addAll(performAutoJoins(c));
                 }
             }
+        }
+        for (Runnable r : actions) {
+            r.run();
         }
     }
 
@@ -238,6 +271,7 @@ public class StateManager {
 
     void onMemberCreate(Address addr, String identifier, String name, BitSet flags) {
         String serverName;
+        List<Runnable> actions;
         synchronized(LOCK) {
             // Special case, due to bungee, when a player connects, they may already
             // be connected to another server, so disconnect them from the other
@@ -250,10 +284,13 @@ public class StateManager {
                 }
             }
             serverName = servers.get(addr);
-            performAutoJoins(member);
+            actions = performAutoJoins(member);
         }
         MemberJoinEvent event = new MemberJoinEvent(serverName, identifier, name);
         plugin.getServer().getPluginManager().callEvent(event);
+        for (Runnable r : actions) {
+            r.run();
+        }
     }
 
     void onMemberUpdate(String identifier, BitSet flags) {
@@ -292,18 +329,24 @@ public class StateManager {
 
     void onChannelCreate(Address owner, String name, String messageFormat, String actionFormat, BitSet flags, final String permission) {
         boolean update;
+        List<Runnable> actions = null;
         synchronized (LOCK) {
             update = channels.containsKey(name);
             if (!update) {
                 ChatChannel chatChannel = new ChatChannel(owner, name, messageFormat, actionFormat, flags, permission);
                 channels.put(name, chatChannel);
-                performAutoJoins(chatChannel);
+                actions = performAutoJoins(chatChannel);
             }
         }
         if (update) {
             onChannelUpdate(name, messageFormat, actionFormat, flags, permission);
         } else {
             plugin.getCommandSenderManager().registerPermission(permission);
+        }
+        if (actions != null) {
+            for (Runnable r : actions) {
+                r.run();
+            }
         }
     }
 
@@ -367,23 +410,27 @@ public class StateManager {
     void onChannelMessage(String channel, String identifier, String message) {
         ChannelMessageEvent channelMessageEvent = new ChannelMessageEvent(identifier, channel, message);
         plugin.getServer().getPluginManager().callEvent(channelMessageEvent);
+        List<String> targets = new ArrayList<String>();
         synchronized (LOCK) {
             ChatChannel chatChannel = channels.get(channel);
-            Address localAddress = getLocalAddress();
             if (chatChannel != null) {
                 for (Member dest : chatChannel.getMembers()) {
                     if (dest.getAddress().equals(localAddress)) {
-                        // XXX: Release lock first.
-                        plugin.getCommandSenderManager().sendMessage(dest.getIdentifier(), message);
+                        targets.add(dest.getIdentifier());
                     }
                 }
             }
+        }
+        for (String i : targets) {
+            plugin.getCommandSenderManager().sendMessage(i, message);
         }
     }
 
     void onMessage(String from, String to, String message) {
         MessageEvent messageEvent = new MessageEvent(from, to, message);
         plugin.getServer().getPluginManager().callEvent(messageEvent);
+        boolean broadcast = false;
+        Map<String,String> messages = new HashMap<String,String>();
         synchronized (LOCK) {
             Member fromMember;
             if (from != null) {
@@ -409,21 +456,26 @@ public class StateManager {
                     plugin.getCommandSenderManager().setReplyAddress(to, from);
                     // Private messages.
                     if (localAddress.equals(toMember.getAddress())) {
-                        plugin.getCommandSenderManager().sendMessage(to,
-                                plugin.translate("message.receiveformat", fromMember.getName(), toMember.getName(), message));
+                        messages.put(to, plugin.translate("message.receiveformat", fromMember.getName(), toMember.getName(), message));
                     }
                     if (localAddress.equals(fromMember.getAddress())) {
-                        plugin.getCommandSenderManager().sendMessage(from,
-                                plugin.translate("message.sendformat", fromMember.getName(), toMember.getName(), message));
+                        messages.put(from, plugin.translate("message.sendformat", fromMember.getName(), toMember.getName(), message));
                     }
                 } else {
                     if (localAddress.equals(toMember.getAddress())) {
-                        plugin.getCommandSenderManager().sendMessage(from,
-                                plugin.translate("message.echoto", fromMember.getName(), toMember.getName(), message));
+                        messages.put(to, plugin.translate("message.echoto", fromMember.getName(), toMember.getName(), message));
                     }
                 }
             } else {
-                plugin.getCommandSenderManager().broadcast(plugin.translate("message.broadcast", message));
+                messages.put(null, plugin.translate("message.broadcast", message));
+                broadcast = true;
+            }
+        }
+        if (broadcast) {
+            plugin.getCommandSenderManager().broadcast(messages.get(null));
+        } else {
+            for (Map.Entry<String,String> e : messages.entrySet()) {
+                plugin.getCommandSenderManager().sendMessage(e.getKey(), e.getValue());
             }
         }
     }
@@ -476,27 +528,34 @@ public class StateManager {
     }
 
     public List<String> getAvailableChannels(String identifier) {
+        Map<String, String> channelPermissions = new HashMap<String, String>();
         List<String> ret = new ArrayList<String>();
         synchronized (LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
                 String permission = chatChannel.getPermission();
-                // XXX: release lock first.
-                if (permission != null && !plugin.getCommandSenderManager().hasPermission(identifier, permission)) {
+                if (permission != null) {
+                    channelPermissions.put(chatChannel.getName(), permission);
                     continue;
                 }
                 ret.add(chatChannel.getName());
+            }
+        }
+        for (Map.Entry<String, String> e : channelPermissions.entrySet()) {
+            if (plugin.getCommandSenderManager().hasPermission(identifier, e.getValue())) {
+                ret.add(e.getKey());
             }
         }
         return ret;
     }
 
     public List<String> getAutoJoinChannels(String identifier) {
+        Map<String,String> channelPermissions = new HashMap<String,String>();
         List<String> ret = new ArrayList<String>();
         synchronized (LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
                 String permission = chatChannel.getPermission();
-                // XXX: release lock first.
-                if (permission != null && !plugin.getCommandSenderManager().hasPermission(identifier, permission)) {
+                if (permission != null) {
+                    channelPermissions.put(chatChannel.getName(), permission);
                     continue;
                 }
                 Address address = chatChannel.getOwner();
@@ -504,6 +563,11 @@ public class StateManager {
                     continue;
                 }
                 ret.add(chatChannel.getName());
+            }
+        }
+        for (Map.Entry<String, String> e : channelPermissions.entrySet()) {
+            if (plugin.getCommandSenderManager().hasPermission(identifier, e.getValue())) {
+                ret.add(e.getKey());
             }
         }
         return ret;
@@ -586,5 +650,4 @@ public class StateManager {
             return member == null ? null : member.getAddress();
         }
     }
-
 }
