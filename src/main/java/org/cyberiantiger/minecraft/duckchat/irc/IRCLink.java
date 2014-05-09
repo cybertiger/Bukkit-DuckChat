@@ -222,7 +222,14 @@ public class IRCLink {
         ircConnection.setPong(true);
 
         ircConnection.addIRCEventListener(ircEventAdapter);
-
+        ircConnection.setUncaughtExceptionHandler(
+                new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        plugin.getLogger().log(Level.WARNING, "Exception in ircbot", e);
+                    }
+                }
+                );
         shouldReconnect = true;
         ircConnection.connect();
     }

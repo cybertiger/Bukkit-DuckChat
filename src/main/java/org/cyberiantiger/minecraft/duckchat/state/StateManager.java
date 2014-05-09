@@ -154,6 +154,7 @@ public class StateManager {
 
     void onViewUpdated(List<Address> addresses) {
         Map<Address,String> removed = new HashMap<Address,String>();
+        Map<Address,String> added = new HashMap<Address,String>();
         synchronized (LOCK) {
             // Remove stale members entries.
             Iterator<Map.Entry<String, Member>> i2 = members.entrySet().iterator();
@@ -189,12 +190,26 @@ public class StateManager {
                     i.remove();
                 }
             }
+            for (Address addr : addresses) {
+                if (!servers.containsKey(addr)) {
+                    String name = plugin.getNodeName(addr);
+                    if (name != null) {
+                        servers.put(addr, name);
+                        added.put(addr, name);
+                    }
+                }
+            }
         }
         // Send events & broadcast messages.
         for (Map.Entry<Address,String> e : removed.entrySet()) {
             ServerLeaveEvent event = new ServerLeaveEvent(e.getKey(), e.getValue());
             plugin.getServer().getPluginManager().callEvent(event);
             plugin.getCommandSenderManager().broadcast(plugin.translate("server.leave", e.getValue()));
+        }
+        for (Map.Entry<Address,String> e : added.entrySet()) {
+            ServerJoinEvent event = new ServerJoinEvent(e.getKey(), e.getValue());
+            plugin.getServer().getPluginManager().callEvent(event);
+            plugin.getCommandSenderManager().broadcast(plugin.translate("server.join", e.getValue()));
         }
     }
 
@@ -209,12 +224,15 @@ public class StateManager {
     }
 
     void onServerCreate(Address src, String name) {
+        boolean created;
         synchronized(LOCK) {
-            servers.put(src, name);
+            created = servers.put(src, name) == null;
         }
-        ServerJoinEvent event = new ServerJoinEvent(src, name);
-        plugin.getServer().getPluginManager().callEvent(event);
-        plugin.getCommandSenderManager().broadcast(plugin.translate("server.join", name));
+        if (created) {
+            ServerJoinEvent event = new ServerJoinEvent(src, name);
+            plugin.getServer().getPluginManager().callEvent(event);
+            plugin.getCommandSenderManager().broadcast(plugin.translate("server.join", name));
+        }
     }
 
 
