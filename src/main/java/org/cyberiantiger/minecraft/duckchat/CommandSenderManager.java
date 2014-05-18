@@ -320,7 +320,7 @@ public class CommandSenderManager {
             if (Main.isServerThread()) {
                 // Fuck the metadata API and the horse it rode in on.
                 Metadatable m = (Metadatable) sender;
-                m.setMetadata(REPLY_ADDRESS, new MetadataValueAdapter(plugin) {
+                m.setMetadata(CURRENT_CHANNEL, new MetadataValueAdapter(plugin) {
                     @Override
                     public Object value() {
                         return channel;
