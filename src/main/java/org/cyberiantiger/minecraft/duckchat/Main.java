@@ -295,32 +295,39 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("t", messageSubCommand);
     }
 
+    private void executeCommand(CommandSender sender, SubCommand cmd, String label, String[] args) {
+        try {
+            cmd.onCommand(sender, args);
+        } catch (SenderTypeException ex) {
+            sender.sendMessage(translate("error.wrongsender"));
+        } catch (PermissionException ex) {
+            sender.sendMessage(translate("error.permission", ex.getPermission()));
+        } catch (UsageException ex) {
+            sender.sendMessage(translate(cmd.getName() + ".usage", label));
+        } catch (SubCommandException ex) {
+            sender.sendMessage(translate("error.generic", ex.getMessage()));
+        }
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // Check for label matches.
         for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
-            try {
                 if(label.equalsIgnoreCase(e.getKey())) {
-                    e.getValue().onCommand(sender, args);
+                    executeCommand(sender, e.getValue(), label, args);
                     return true;
-                } else if (args.length >= 1 && e.getKey().equalsIgnoreCase(args[0])) {
+                }
+        }
+        // Check for second argument matches.
+        if (args.length >= 1) {
+            for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
+                if (e.getKey().equalsIgnoreCase(args[0])) {
                     label += " " + args[0];
                     String[] newArgs = new String[args.length-1];
                     System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-                    e.getValue().onCommand(sender, newArgs);
+                    executeCommand(sender, e.getValue(), label, newArgs);
                     return true;
                 }
-            } catch (SenderTypeException ex) {
-                sender.sendMessage(translate("error.wrongsender"));
-                return true;
-            } catch (PermissionException ex) {
-                sender.sendMessage(translate("error.permission", ex.getPermission()));
-                return true;
-            } catch (UsageException ex) {
-                sender.sendMessage(translate(e.getValue().getName() + ".usage", label));
-                return true;
-            } catch (SubCommandException ex) {
-                sender.sendMessage(translate("error.generic", ex.getMessage()));
-                return true;
             }
         }
         return false;
