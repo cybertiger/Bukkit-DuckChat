@@ -151,6 +151,9 @@ public class CommandSenderManager {
     }
 
     public boolean hasPermission(final CommandSender sender, final String permission) {
+        if (sender == null) {
+            return false;
+        }
         if (!plugin.getServer().isPrimaryThread()) {
             Future<Boolean> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<Boolean>() {
                 @Override
@@ -167,7 +170,6 @@ public class CommandSenderManager {
                 plugin.getLogger().log(Level.WARNING, null, ex);
                 return false;
             }
-            
         }
         return sender.hasPermission(permission);
     }
