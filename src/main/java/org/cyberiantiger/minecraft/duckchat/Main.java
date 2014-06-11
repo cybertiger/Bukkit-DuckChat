@@ -49,6 +49,7 @@ import org.cyberiantiger.minecraft.duckchat.message.MemberCreateData;
 import org.cyberiantiger.minecraft.duckchat.message.MemberDeleteData;
 import org.cyberiantiger.minecraft.duckchat.message.MemberUpdateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelPartData;
+import org.cyberiantiger.minecraft.duckchat.message.Data;
 import org.cyberiantiger.minecraft.duckchat.message.MessageData;
 import org.cyberiantiger.minecraft.duckchat.message.ServerCreateData;
 import org.cyberiantiger.minecraft.duckchat.state.StateManager;
@@ -61,11 +62,6 @@ import org.jgroups.JChannel;
  * @author antony
  */
 public class Main extends JavaPlugin implements Listener {
-
-    private static final Thread serverThread = Thread.currentThread();
-    public static boolean isServerThread() {
-        return Thread.currentThread() == serverThread;
-    }
 
     private final StateManager state = new StateManager(this);
     private final CommandSenderManager commandSenderManager = new CommandSenderManager(this);
@@ -150,8 +146,7 @@ public class Main extends JavaPlugin implements Listener {
                 String permission = channelSection.getString("permission");
                 flags.set(ChatChannel.FLAG_LOCAL_AUTO_JOIN, channelSection.getBoolean("localAutoJoin", false));
                 flags.set(ChatChannel.FLAG_GLOBAL_AUTO_JOIN, channelSection.getBoolean("globalAutoJoin", false));
-                ChannelCreateData registerPacket = new ChannelCreateData(addr, key, messageFormat, actionFormat, flags, permission);
-                channel.send(null, registerPacket);
+                sendData(new ChannelCreateData(addr, key, messageFormat, actionFormat, flags, permission));
             }
         }
         
@@ -357,42 +352,48 @@ public class Main extends JavaPlugin implements Listener {
         return null;
     }
 
-    public void sendServerCreate() {
-        try {
-            channel.send(null, new ServerCreateData(channel.getName()));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
+    public void sendData(Data data) {
+        sendData(null, data);
+    }
+
+    public void sendData(final Address target, final Data data) {
+        if (!getServer().isPrimaryThread()) {
+            try {
+                channel.send(target, data);
+            } catch (Exception ex) {
+                getLogger().log(Level.WARNING, "Error sending network message", ex);
+            }
+        } else {
+            getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+
+                @Override
+                public void run() {
+                    sendData(target, data);
+                }
+            });
         }
+    }
+
+    public void sendServerCreate() {
+        sendData(new ServerCreateData(channel.getName()));
     }
 
     public void sendMemberCreate(CommandSender player) {
-        try {
-            String playerName;
-            if (player instanceof ConsoleCommandSender) {
-                playerName = "console@" + channel.getName();
-            } else {
-                playerName = player.getName();
-            }
-            channel.send(null, new MemberCreateData(getCommandSenderManager().getIdentifier(player), playerName, new BitSet()));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
+        String playerName;
+        if (player instanceof ConsoleCommandSender) {
+            playerName = "console@" + channel.getName();
+        } else {
+            playerName = player.getName();
         }
+        sendData(new MemberCreateData(getCommandSenderManager().getIdentifier(player), playerName, new BitSet()));
     }
 
     public void sendMemberUpdate(Player player) {
-        try {
-            channel.send(null, new MemberUpdateData(getCommandSenderManager().getIdentifier(player), new BitSet()));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
-        }
+        sendData(new MemberUpdateData(getCommandSenderManager().getIdentifier(player), new BitSet()));
     }
 
     public void sendMemberDelete(Player player) {
-        try {
-            channel.send(null, new MemberDeleteData(getCommandSenderManager().getIdentifier(player)));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
-        }
+        sendData(new MemberDeleteData(getCommandSenderManager().getIdentifier(player)));
     }
 
     public void sendJoinChannel(String channelName, CommandSender sender) {
@@ -400,19 +401,11 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public void sendJoinChannel(String channelName, String identifier) {
-        try {
-            channel.send(null, new ChannelJoinData(channelName, identifier));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
-        }
+        sendData(new ChannelJoinData(channelName, identifier));
     }
 
     public void sendPartChannel(CommandSender player, String channelName) {
-        try {
-            channel.send(null, new ChannelPartData(channelName, getCommandSenderManager().getIdentifier(player), player.getName()));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
-        }
+        sendData(new ChannelPartData(channelName, getCommandSenderManager().getIdentifier(player), player.getName()));
     }
 
     public void sendChannelAction(CommandSender sender, String action) {
@@ -474,11 +467,7 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public void sendChannelMessage(String playerIdentity, String channelName, String message) {
-        try {
-            channel.send(null, new ChannelMessageData(playerIdentity, channelName, message));
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
-        }
+        sendData(new ChannelMessageData(playerIdentity, channelName, message));
     }
 
     public void sendMessage(CommandSender from, String to, String message) {
@@ -487,15 +476,10 @@ public class Main extends JavaPlugin implements Listener {
         if (toAddress == null || fromAddress == null) {
             return;
         }
-        try {
-            channel.send(toAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
-            if (fromAddress != toAddress) {
-                channel.send(fromAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
-            }
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Error sending network message", ex);
+        sendData(toAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
+        if (fromAddress != toAddress) {
+            sendData(fromAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
         }
-
     }
 
     public String translate(String key, Object... args) {

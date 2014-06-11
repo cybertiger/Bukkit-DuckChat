@@ -37,7 +37,7 @@ public class VaultPlayerTitles implements PlayerTitles {
         if (vaultChat == null) {
             return "";
         }
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
                 @Override
                 public String call() throws Exception {
@@ -61,7 +61,7 @@ public class VaultPlayerTitles implements PlayerTitles {
         if (vaultChat == null) {
             return "";
         }
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
                 @Override
                 public String call() throws Exception {

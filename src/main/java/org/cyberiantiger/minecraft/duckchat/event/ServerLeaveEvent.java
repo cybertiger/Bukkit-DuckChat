@@ -4,9 +4,9 @@
  */
 package org.cyberiantiger.minecraft.duckchat.event;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.cyberiantiger.minecraft.duckchat.Main;
 import org.jgroups.Address;
 
 /**
@@ -23,7 +23,7 @@ public class ServerLeaveEvent extends Event {
     private final Address addr;
     private final String name;
     public ServerLeaveEvent(Address addr, String name) {
-        super(!Main.isServerThread());
+        super(!Bukkit.isPrimaryThread());
         this.addr = addr;
         this.name = name;
     }

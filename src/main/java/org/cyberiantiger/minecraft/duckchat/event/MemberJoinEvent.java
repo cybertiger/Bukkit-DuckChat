@@ -4,9 +4,9 @@
  */
 package org.cyberiantiger.minecraft.duckchat.event;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
  *
@@ -30,7 +30,7 @@ public class MemberJoinEvent extends Event {
     private String name;
 
     public MemberJoinEvent(String host, String identifier, String name) {
-        super(!Main.isServerThread());
+        super(!Bukkit.isPrimaryThread());
         this.host = host;
         this.identifier = identifier;
         this.name = name;

@@ -80,7 +80,7 @@ public class CommandSenderManager {
     }
 
     public String getDisplayName(final Player player) {
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
                 @Override
                 public String call() throws Exception {
@@ -109,7 +109,7 @@ public class CommandSenderManager {
     }
 
     public String getWorld(final Player sender) {
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             Future<String> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<String>() {
                 @Override
                 public String call() throws Exception {
@@ -151,7 +151,7 @@ public class CommandSenderManager {
     }
 
     public boolean hasPermission(final CommandSender sender, final String permission) {
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             Future<Boolean> callSyncMethod = plugin.getServer().getScheduler().callSyncMethod(plugin, new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
@@ -179,7 +179,7 @@ public class CommandSenderManager {
         if (permission == null) {
             return;
         }
-        if (!Main.isServerThread()) {
+        if (!plugin.getServer().isPrimaryThread()) {
             plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
                 @Override
                 public void run() {
@@ -212,7 +212,7 @@ public class CommandSenderManager {
             if (sender == null) {
                 return;
             }
-            if (Main.isServerThread()) {
+            if (plugin.getServer().isPrimaryThread()) {
                 sender.sendMessage(message);
             } else {
                 plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
@@ -236,7 +236,7 @@ public class CommandSenderManager {
 
     public void setReplyAddress(final CommandSender sender, final String replyTo) {
         if (sender instanceof Metadatable) {
-            if (Main.isServerThread()) {
+            if (plugin.getServer().isPrimaryThread()) {
                 // Fuck the metadata API and the horse it rode in on.
                 Metadatable m = (Metadatable) sender;
                 m.setMetadata(REPLY_ADDRESS, new MetadataValueAdapter(plugin) {
@@ -269,7 +269,7 @@ public class CommandSenderManager {
 
     public String getReplyAddress(final CommandSender target) {
         if (target instanceof Metadatable) {
-            if (Main.isServerThread()) {
+            if (plugin.getServer().isPrimaryThread()) {
                 // Fuck the metadata API and the horse it rode in on.
                 Metadatable m = (Metadatable) target;
                 if (m.hasMetadata(REPLY_ADDRESS)) {
@@ -299,7 +299,7 @@ public class CommandSenderManager {
     }
 
     public void broadcast(final String message) {
-        if (Main.isServerThread()) {
+        if (plugin.getServer().isPrimaryThread()) {
             plugin.getServer().broadcastMessage(message);
         } else {
             plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
@@ -317,7 +317,7 @@ public class CommandSenderManager {
 
     public void setCurrentChannel(final CommandSender sender, final String channel) {
         if (sender instanceof Metadatable) {
-            if (Main.isServerThread()) {
+            if (plugin.getServer().isPrimaryThread()) {
                 // Fuck the metadata API and the horse it rode in on.
                 Metadatable m = (Metadatable) sender;
                 m.setMetadata(CURRENT_CHANNEL, new MetadataValueAdapter(plugin) {
@@ -345,7 +345,7 @@ public class CommandSenderManager {
 
     public String getCurrentChannel(final CommandSender sender) {
         if (sender instanceof Metadatable) {
-            if (Main.isServerThread()) {
+            if (plugin.getServer().isPrimaryThread()) {
                 // Fuck the metadata API and the horse it rode in on.
                 Metadatable m = (Metadatable) sender;
                 if (m.hasMetadata(CURRENT_CHANNEL)) {

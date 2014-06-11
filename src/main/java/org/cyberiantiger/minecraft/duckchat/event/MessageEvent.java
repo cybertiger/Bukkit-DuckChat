@@ -4,9 +4,9 @@
  */
 package org.cyberiantiger.minecraft.duckchat.event;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.cyberiantiger.minecraft.duckchat.Main;
 
 /**
  *
@@ -29,7 +29,7 @@ public class MessageEvent extends Event {
     }
 
     public MessageEvent(String fromIdentifier, String toIdentifier, String message) {
-        super(!Main.isServerThread());
+        super(!Bukkit.isPrimaryThread());
         this.fromIdentifier = fromIdentifier;
         this.toIdentifier = toIdentifier;
         this.message = message;
