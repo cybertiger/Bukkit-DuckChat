@@ -9,7 +9,6 @@ import org.cyberiantiger.minecraft.duckchat.state.ChatChannel;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelMessageData;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommand;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -42,7 +41,6 @@ import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.command.UsageException;
 import org.cyberiantiger.minecraft.duckchat.depend.PlayerTitles;
 import org.cyberiantiger.minecraft.duckchat.depend.VaultPlayerTitles;
-import org.cyberiantiger.minecraft.duckchat.irc.IRCLink;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelCreateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelJoinData;
 import org.cyberiantiger.minecraft.duckchat.message.MemberCreateData;
@@ -73,8 +71,6 @@ public class Main extends JavaPlugin implements Listener {
     private boolean registerPermissions;
     private String defaultChannel;
 
-
-    private final List<IRCLink> ircLinks = new ArrayList();
 
     // Messages.
     private final Map<String,String> messages = new HashMap<String,String>();
@@ -150,41 +146,6 @@ public class Main extends JavaPlugin implements Listener {
             }
         }
         
-        if (config.isConfigurationSection("irc-bridges")) {
-            ConfigurationSection bridgesSection = config.getConfigurationSection("irc-bridges");
-            for (String key : bridgesSection.getKeys(false)) {
-                if (!bridgesSection.isConfigurationSection(key)) {
-                    continue;
-                }
-                ConfigurationSection bridgeSection = bridgesSection.getConfigurationSection(key);
-                boolean useSsl = bridgeSection.getBoolean("ssl", false);
-                String host = bridgeSection.getString("host", "localhost");
-                int port = bridgeSection.getInt("port", 6667);
-                String password = bridgeSection.getString("password", "");
-                String nick = bridgeSection.getString("nick", "DuckChat");
-                String username = bridgeSection.getString("username", "bot");
-                String realm = bridgeSection.getString("realm", "localhost");
-                String messageFormat = bridgeSection.getString("messageFormat", "<%s> %s");
-                String actionFormat = bridgeSection.getString("actionFormat", "*%s %s");
-
-                IRCLink ircLink = new IRCLink(this, useSsl, host, port, password, nick, username, realm, messageFormat, actionFormat);
-
-                if (bridgeSection.isConfigurationSection("channels")) {
-                    ConfigurationSection bridgeChannelSection = bridgeSection.getConfigurationSection("channels");
-                    for (String duckChannel : bridgeChannelSection.getKeys(false)) {
-                        if (bridgeChannelSection.isString(duckChannel)) {
-                            ircLink.addChannel(duckChannel, bridgeChannelSection.getString(duckChannel));
-                        }
-                    }
-                }
-                try {
-                    ircLink.connect();
-                    ircLinks.add(ircLink);
-                } catch (IOException ex) {
-                    getLogger().log(Level.WARNING, "Error connecting to IRC", ex);
-                }
-            }
-        }
     }
 
     // Net
@@ -193,14 +154,6 @@ public class Main extends JavaPlugin implements Listener {
             channel.close();
             channel = null;
         }
-        for (IRCLink ircLink : ircLinks) {
-            try {
-                ircLink.disconnect();
-            } catch (IOException ex) {
-                getLogger().log(Level.WARNING, null, ex);
-            }
-        }
-        ircLinks.clear();
         state.clear();
     }
 

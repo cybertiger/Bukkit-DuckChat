@@ -9,10 +9,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import net.milkbowl.vault.chat.Chat;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.cyberiantiger.minecraft.duckchat.Main;
-import org.cyberiantiger.minecraft.duckchat.irc.ControlCodes;
 
 /**
  *
@@ -54,7 +54,7 @@ public class VaultPlayerTitles implements PlayerTitles {
                 return "";
             }
         }
-        return vaultChat.getPlayerPrefix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
+        return vaultChat.getPlayerPrefix(player).replace('&', ChatColor.COLOR_CHAR);
     }
 
     public String getSuffix(final Player player) {
@@ -78,7 +78,7 @@ public class VaultPlayerTitles implements PlayerTitles {
                 return "";
             }
         }
-        return vaultChat.getPlayerSuffix(player).replace('&', ControlCodes.MINECRAFT_CONTROL_CODE);
+        return vaultChat.getPlayerSuffix(player).replace('&', ChatColor.COLOR_CHAR);
     }
     
 }
