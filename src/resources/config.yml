@@ -1,3 +1,56 @@
+# Name of JGroups cluster.
+#
+# clusterName: duckchat
+
+# Name of this node, by default this is not set, you probably want to set
+# this to a sensible name for the server.
+# nodename: Survival
+
+# Default channel name.
+defaultChannel: global
+
+# Store players by UUID.
+#
+useUUIDs: false
+
+# Register channel permissions.
+#
+# registerPermissions: true
+
+# Network config
+# If not set, will use default JGroups settings.
+# Read the jgroups documentation for how to configure this, calling this
+# config file arcane, would be an understatement.
+#
+# network: udp.xml
+
+# List of channels.
+
+# format parameters.
+# 1 - Channel name
+# 2 - Nodename
+# 3 - World name
+# 4 - player name
+# 5 - player prefix
+# 6 - player display name
+# 7 - player suffix.
+# 8 - Message or action.
+channels:
+        global:
+                owned: false
+                localAutoJoin: false
+                messageFormat: '[%1$s %6$s] %8$s'
+                actionFormat: '[%1$s] %6$s %8$s'
+                globalAutoJoin: true
+#                permission: some.permission
+# Uncomment and rename this for a locally owned channel
+#        local:
+#                owned: true
+#                localAutoJoin: true
+#                globalAutoJoin: false
+#                permission: some.permission
+
+
 # Example irc bridge.
 #irc-bridges:
 #    test:
@@ -14,6 +67,64 @@
 #            global: '#yourchannel'
                 
 messages:
+        chat:
+                nochannel: 'Your current channel is invalid.'
+        channels:
+                header: '====== Channels ======'
+                channel: '%s'
+                joinedchannel: '*%s'
+                footer: '======================'
+                usage: '/%s'
+        channel:
+                current: 'You are currently talking on %s.'
+                notfound: 'Channel %s not found.'
+                success: 'You are now talking on %s.'
+                usage: '/%s [channel]'
+        channellist:
+                header: 'Members of channel %s:'
+                notfound: 'Channel %s not found.'
+                usage: '/%s [channel]'
+        join:
+                nochannel: 'Channel %s does not exist.'
+                membership: 'You have already joined %s.'
+                success: 'You have joined %s.'
+                usage: '/%s <channel>'
+        part:
+                nochannel: 'Channel %s does not exist.'
+                membership: 'You are not a member of %s.'
+                success: 'You have left %s.'
+                usage: '/%s <channel>'
+        me:
+                usage: '/%s <action>'
+        say:
+                usage: '/%s <message>'
+        message:
+                sendformat: '&6[me -> %2$s]&r %3$s'
+                receiveformat: '&6[%1$s -> me]&r %3$s'
+                echoto: '%2$s'
+                broadcast: '%s'
+                notfound: 'No player called %s found.'
+                usage: '/%s <player> <message>'
+        reply:
+                address: 'You current reply address is: %s'
+                notfound: 'You have no reply address.'
+                usage: '/%s [message]'
+        reload:
+                success: 'DuckChat settings reloaded.'
+                usage: '/%s'
+        error:
+                wrongsender: 'You cannot use this command from this entry method.'
+                permission: 'You are missing the required permission: %s.'
+                generic: 'An error occurred: %s.'
+        sender:
+                console: '%s@%s'
+        member:
+                join: '&7%s has joined %s'
+                leave: '&8%s has left %s'
+        server:
+                suspect: '&6&l%s may be having issues'
+                join: '&6&l%s has joined'
+                leave: '&6&l%s has left'
         irc:
                 playerlist:
                         header: '%2$d players playing Minecraft on %1$d servers.'
