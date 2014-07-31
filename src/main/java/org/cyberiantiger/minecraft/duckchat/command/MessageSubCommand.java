@@ -12,7 +12,7 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class MessageSubCommand extends SubCommand {
+public class MessageSubCommand extends SubCommand<Main> {
 
     public MessageSubCommand(Main plugin) {
         super(plugin);

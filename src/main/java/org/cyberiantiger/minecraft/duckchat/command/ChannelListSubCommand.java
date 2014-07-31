@@ -13,7 +13,7 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class ChannelListSubCommand extends SubCommand {
+public class ChannelListSubCommand extends SubCommand<Main> {
 
     public ChannelListSubCommand(Main plugin) {
         super(plugin);

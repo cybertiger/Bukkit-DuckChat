@@ -6,16 +6,16 @@ package org.cyberiantiger.minecraft.duckchat.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.cyberiantiger.minecraft.duckchat.Main;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  *
  * @author antony
  */
-public abstract class SubCommand {
-    protected final Main plugin;
+public abstract class SubCommand<T extends JavaPlugin> {
+    protected final T plugin;
 
-    public SubCommand(Main plugin) {
+    public SubCommand(T plugin) {
         this.plugin = plugin;
     }
 

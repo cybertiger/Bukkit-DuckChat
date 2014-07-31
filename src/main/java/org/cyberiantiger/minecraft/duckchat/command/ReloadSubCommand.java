@@ -12,7 +12,7 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class ReloadSubCommand extends SubCommand {
+public class ReloadSubCommand extends SubCommand<Main> {
 
     public ReloadSubCommand(Main plugin) {
         super(plugin);

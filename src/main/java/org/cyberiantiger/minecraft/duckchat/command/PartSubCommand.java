@@ -12,7 +12,7 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class PartSubCommand extends SubCommand {
+public class PartSubCommand extends SubCommand<Main> {
 
     public PartSubCommand(Main plugin) {
         super(plugin);

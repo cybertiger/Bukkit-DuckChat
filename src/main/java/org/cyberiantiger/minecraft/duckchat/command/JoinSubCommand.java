@@ -12,7 +12,7 @@ import org.cyberiantiger.minecraft.duckchat.Main;
  *
  * @author antony
  */
-public class JoinSubCommand extends SubCommand {
+public class JoinSubCommand extends SubCommand<Main> {
 
     public JoinSubCommand(Main plugin) {
         super(plugin);
