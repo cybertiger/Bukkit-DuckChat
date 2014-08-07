@@ -53,3 +53,15 @@ permissions:
         duckchat.say:
                 default: op
                 description: Allow usage of the say command.
+        duckchat.chat.color:
+                default: op
+                description: Allow usage of color codes with & in chat.
+        duckchat.chat.format:
+                default: op
+                description: Allow usage of format codes with & in chat.
+        duckchat.msg.color:
+                default: op
+                description: Allow usage of color codes with & in messages.
+        duckchat.msg.format:
+                default: op
+                description: Allow usage of format codes with & in messages.

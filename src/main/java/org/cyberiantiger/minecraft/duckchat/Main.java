@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -305,6 +307,35 @@ public class Main extends JavaPlugin implements Listener {
         return null;
     }
 
+    private String COLOR_CODES = "0123456789abcdefABCDEF";
+    private String FORMAT_CODES = "klmnorKLMNOR";
+
+    private String formatColors(String message, boolean allowColor, boolean allowFormat) {
+        if (!allowColor && !allowFormat) {
+            return message;
+        }
+        StringBuilder result = new StringBuilder();
+        boolean special = false;
+        for (int i = 0 ; i < message.length(); i++) {
+            char ch = message.charAt(i);
+            if (special) {
+                if ((allowColor && COLOR_CODES.indexOf(ch) != -1) || (allowFormat && FORMAT_CODES.indexOf(ch) != -1)) {
+                    result.append(ChatColor.COLOR_CHAR).append(ch);
+                } else {
+                    result.append('&').append(ch);
+                }
+                special = false;
+            } else {
+                if (ch == '&') {
+                    special = true;
+                } else {
+                    result.append(ch);
+                }
+            }
+        }
+        return result.toString();
+    }
+
     public void sendData(Data data) {
         sendData(null, data);
     }
@@ -377,6 +408,9 @@ public class Main extends JavaPlugin implements Listener {
             return;
         }
         format = getState().getChannelActionFormat(channelName);
+        boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
+        boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");
+        action = formatColors(action, allowColor, allowFormat);
         action = String.format(
                 format,
                 channelName,
@@ -405,6 +439,9 @@ public class Main extends JavaPlugin implements Listener {
             getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
             return;
         }
+        boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
+        boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");
+        message = formatColors(message, allowColor, allowFormat);
         format = getState().getChannelMessageFormat(channelName);
         message = String.format(
                 format,
@@ -429,6 +466,9 @@ public class Main extends JavaPlugin implements Listener {
         if (toAddress == null || fromAddress == null) {
             return;
         }
+        boolean allowColor = getCommandSenderManager().hasPermission(from, "duckchat.msg.color");
+        boolean allowFormat = getCommandSenderManager().hasPermission(from, "duckchat.msg.format");
+        message = formatColors(message, allowColor, allowFormat);
         sendData(toAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
         if (fromAddress != toAddress) {
             sendData(fromAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
