@@ -7,7 +7,7 @@ softdepends:
 commands:
   duckchat:
     description: The main DuckChat command.
-    usage: /<command> channels|channel|chlist|part|join|say|me|msg|reply|reload
+    usage: /<command> channels|channel|chlist|part|join|say|me|msg|reply|reload|broadcast
     aliases:
             - dc
             - channels
