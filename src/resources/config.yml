@@ -105,6 +105,8 @@ messages:
                 broadcast: '%s'
                 notfound: 'No player called %s found.'
                 usage: '/%s <player> <message>'
+        broadcast:
+                usage: '/%s [-g] <message>'
         reply:
                 address: 'You current reply address is: %s'
                 notfound: 'You have no reply address.'
