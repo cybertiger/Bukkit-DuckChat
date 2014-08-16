@@ -68,3 +68,9 @@ commands:
 #        duckchat.msg.format:
 #                default: op
 #                description: Allow usage of format codes with & in messages.
+#        duckchat.broadcast.color:
+#                default: op
+#                description: Allow usage of color codes with & in broadcasts.
+#        duckchat.broadcast.format:
+#                default: op
+#                description: Allow usage of format codes with & in broadcasts.

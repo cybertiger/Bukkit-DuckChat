@@ -39,10 +39,14 @@ public class BroadcastSubCommand extends SubCommand<Main>
         if (argLength >= 0) {
             msg.append(args[argLength]);
         }
+        boolean allowColor = plugin.getCommandSenderManager().hasPermission(sender, "duckchat.broadcast.color");
+        boolean allowFormat = plugin.getCommandSenderManager().hasPermission(sender, "duckchat.broadcast.format");
+        String message = plugin.formatColors(msg.toString(), allowColor, allowFormat);
+
         if (global) {
-            plugin.sendBroadcast(msg.toString());
+            plugin.sendBroadcast(message);
         } else {
-            plugin.sendBroadcast(plugin.getState().getLocalAddress(), msg.toString());
+            plugin.sendBroadcast(plugin.getState().getLocalAddress(), message);
         }
     }
 

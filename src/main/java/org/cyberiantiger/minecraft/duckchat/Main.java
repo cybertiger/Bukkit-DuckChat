@@ -314,7 +314,7 @@ public class Main extends JavaPlugin implements Listener {
     private String COLOR_CODES = "0123456789abcdefABCDEF";
     private String FORMAT_CODES = "klmnorKLMNOR";
 
-    private String formatColors(String message, boolean allowColor, boolean allowFormat) {
+    public String formatColors(String message, boolean allowColor, boolean allowFormat) {
         if (!allowColor && !allowFormat) {
             return message;
         }
