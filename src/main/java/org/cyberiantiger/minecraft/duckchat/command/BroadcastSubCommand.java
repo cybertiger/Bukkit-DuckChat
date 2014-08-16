@@ -26,15 +26,16 @@ public class BroadcastSubCommand extends SubCommand<Main>
 
     @Override
     public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        boolean global = "-g".equals(args[0]);
+        boolean global = args.length > 0 && "-g".equals(args[0]);
+        if (args.length == (global ? 1 : 0)) {
+            throw new UsageException();
+        }
         StringBuilder msg = new StringBuilder();
         int argLength = args.length -1;
         for (int i = global ? 1 : 0; i < argLength; i++) {
             msg.append(args[i]);
             msg.append(' ');
         }
-        msg.append(args[argLength]);
-
         if (global) {
             plugin.sendBroadcast(msg.toString());
         } else {
