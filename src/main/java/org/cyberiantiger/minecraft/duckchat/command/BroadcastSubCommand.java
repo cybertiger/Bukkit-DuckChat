@@ -36,6 +36,9 @@ public class BroadcastSubCommand extends SubCommand<Main>
             msg.append(args[i]);
             msg.append(' ');
         }
+        if (argLength >= 0) {
+            msg.append(args[argLength]);
+        }
         if (global) {
             plugin.sendBroadcast(msg.toString());
         } else {
