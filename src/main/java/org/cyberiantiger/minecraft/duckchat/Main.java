@@ -27,6 +27,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.cyberiantiger.minecraft.duckchat.command.BroadcastSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.ChannelListSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.ChannelSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.ChannelsSubCommand;
@@ -224,6 +225,7 @@ public class Main extends JavaPlugin implements Listener {
         SubCommand replySubCommand = new ReplySubCommand(this);
         SubCommand reloadSubCommand = new ReloadSubCommand(this);
         SubCommand saySubCommand = new SaySubCommand(this);
+        SubCommand broadcastSubCommand = new BroadcastSubCommand(this);
 
         subcommands.put("channels", channelsSubCommand);
         subcommands.put("channel", channelSubCommand);
@@ -238,6 +240,8 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("reply", replySubCommand);
         subcommands.put("reload", reloadSubCommand);
         subcommands.put("dcreload", reloadSubCommand);
+        subcommands.put("broadcast", broadcastSubCommand);
+        subcommands.put("bc", broadcastSubCommand);
         subcommands.put("say", saySubCommand);
         subcommands.put("me", meSubCommand);
         subcommands.put("m", messageSubCommand);
@@ -473,6 +477,14 @@ public class Main extends JavaPlugin implements Listener {
         if (fromAddress != toAddress) {
             sendData(fromAddress, new MessageData(getCommandSenderManager().getIdentifier(from), to, message));
         }
+    }
+
+    public void sendBroadcast(String broadcast) {
+        sendBroadcast(null, broadcast);
+    }
+
+    public void sendBroadcast(Address destination, String broadcast) {
+        sendData(destination, new MessageData(null, null, broadcast));
     }
 
     public String translate(String key, Object... args) {
