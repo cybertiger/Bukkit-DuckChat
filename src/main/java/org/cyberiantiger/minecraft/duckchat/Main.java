@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -52,6 +51,7 @@ import org.cyberiantiger.minecraft.duckchat.message.MemberUpdateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelPartData;
 import org.cyberiantiger.minecraft.duckchat.message.Data;
 import org.cyberiantiger.minecraft.duckchat.message.MessageData;
+import org.cyberiantiger.minecraft.duckchat.message.PluginMessageData;
 import org.cyberiantiger.minecraft.duckchat.message.ServerCreateData;
 import org.cyberiantiger.minecraft.duckchat.state.StateManager;
 import org.jgroups.Address;
@@ -116,6 +116,9 @@ public class Main extends JavaPlugin implements Listener {
         if (nodename != null) {
             channel.setName(nodename);
         }
+        // This is very spammy and leaves the diagnostics thread spinning after
+        // a channel.close();
+        channel.getProtocolStack().getTransport().disableDiagnostics();
         channel.setReceiver(new DuckReceiver(getState()));
         channel.connect(clusterName);
         getState().setLocalAddress(channel.getAddress());
@@ -485,6 +488,14 @@ public class Main extends JavaPlugin implements Listener {
 
     public void sendBroadcast(Address destination, String broadcast) {
         sendData(destination, new MessageData(null, null, broadcast));
+    }
+
+    public void sendPluginMessage(String channel, byte[] data) {
+        sendPluginMessage(null, channel, data);
+    }
+
+    public void sendPluginMessage(Address destination, String channel, byte[] data) {
+        sendData(destination, new PluginMessageData(channel, data));
     }
 
     public String translate(String key, Object... args) {

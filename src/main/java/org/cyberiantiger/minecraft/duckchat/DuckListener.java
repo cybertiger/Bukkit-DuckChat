@@ -4,6 +4,9 @@
  */
 package org.cyberiantiger.minecraft.duckchat;
 
+import com.google.common.base.Charsets;
+import java.nio.charset.Charset;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,6 +16,8 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
+import org.cyberiantiger.minecraft.duckchat.event.PluginMessageEvent;
+import sun.nio.cs.StandardCharsets;
 
 /**
  *
@@ -57,5 +62,23 @@ public class DuckListener implements Listener {
     @EventHandler
     public void onMemberLeave(MemberLeaveEvent e) {
         plugin.getCommandSenderManager().broadcast(plugin.translate("member.leave", e.getName(), e.getHost()));
+    }
+    
+    @EventHandler
+    public void onPluginMessageEvent(final PluginMessageEvent e) {
+        if (Bukkit.isPrimaryThread()) {
+            if ("command".equals(e.getChannel())) {
+                final String cmd = new String(e.getData(), Charsets.UTF_8);
+                
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), cmd);
+            }
+        } else {
+            plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    onPluginMessageEvent(e);
+                }
+            });
+        }
     }
 }

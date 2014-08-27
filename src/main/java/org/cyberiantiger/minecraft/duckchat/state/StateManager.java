@@ -20,6 +20,7 @@ import org.cyberiantiger.minecraft.duckchat.event.ChannelMessageEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MemberLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.event.MessageEvent;
+import org.cyberiantiger.minecraft.duckchat.event.PluginMessageEvent;
 import org.cyberiantiger.minecraft.duckchat.event.ServerJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.event.ServerLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.event.ServerSuspectEvent;
@@ -649,5 +650,10 @@ public class StateManager {
             Member member = members.get(to);
             return member == null ? null : member.getAddress();
         }
+    }
+
+    public void onPluginMessageData(String channel, byte[] data) {
+        PluginMessageEvent event = new PluginMessageEvent(channel, data);
+        plugin.getServer().getPluginManager().callEvent(event);
     }
 }

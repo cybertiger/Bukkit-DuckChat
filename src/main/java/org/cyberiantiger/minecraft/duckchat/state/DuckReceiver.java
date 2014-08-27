@@ -17,6 +17,7 @@ import org.cyberiantiger.minecraft.duckchat.message.MemberUpdateData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelPartData;
 import org.cyberiantiger.minecraft.duckchat.message.ChannelUpdateData;
 import org.cyberiantiger.minecraft.duckchat.message.MessageData;
+import org.cyberiantiger.minecraft.duckchat.message.PluginMessageData;
 import org.cyberiantiger.minecraft.duckchat.message.ServerCreateData;
 import org.jgroups.Address;
 import org.jgroups.Message;
@@ -84,6 +85,10 @@ public class DuckReceiver extends ReceiverAdapter {
                 case MESSAGE:
                     MessageData messageData = (MessageData) data;
                     state.onMessage(messageData.getFrom(), messageData.getTo(), messageData.getMessage());
+                    break;
+                case PLUGIN_MESSAGE:
+                    PluginMessageData pluginMessageData = (PluginMessageData) data;
+                    state.onPluginMessageData(pluginMessageData.getChannel(), pluginMessageData.getData());
                     break;
             }
         }

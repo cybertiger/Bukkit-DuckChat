@@ -19,5 +19,6 @@ public enum DataType {
     CHANNEL_MESSAGE,
     CHANNEL_JOIN,
     CHANNEL_PART,
-    MESSAGE;
+    MESSAGE,
+    PLUGIN_MESSAGE;
 }
