@@ -49,7 +49,7 @@ public class RexecSubCommand extends SubCommand<Main> {
         if (args.length > 1) {
             tmp.append(args[last]);
         }
-        sender.sendMessage("Executing command remotely at " + (targetAddress == null ? " all servers" : target) + ".");
+        sender.sendMessage("Executing command remotely at " + (targetAddress == null ? "all servers" : target) + ".");
         plugin.sendPluginMessage(targetAddress, "command", tmp.toString().getBytes(Charsets.UTF_8));
     }
 
