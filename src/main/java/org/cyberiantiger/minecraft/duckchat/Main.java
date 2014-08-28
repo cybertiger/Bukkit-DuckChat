@@ -37,6 +37,7 @@ import org.cyberiantiger.minecraft.duckchat.command.PartSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.PermissionException;
 import org.cyberiantiger.minecraft.duckchat.command.ReloadSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.ReplySubCommand;
+import org.cyberiantiger.minecraft.duckchat.command.RexecSubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.SaySubCommand;
 import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
@@ -229,6 +230,7 @@ public class Main extends JavaPlugin implements Listener {
         SubCommand reloadSubCommand = new ReloadSubCommand(this);
         SubCommand saySubCommand = new SaySubCommand(this);
         SubCommand broadcastSubCommand = new BroadcastSubCommand(this);
+        SubCommand rexecSubCommand = new RexecSubCommand(this);
 
         subcommands.put("channels", channelsSubCommand);
         subcommands.put("channel", channelSubCommand);
@@ -242,6 +244,7 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("tell", messageSubCommand);
         subcommands.put("reply", replySubCommand);
         subcommands.put("reload", reloadSubCommand);
+        subcommands.put("rexec", rexecSubCommand);
         subcommands.put("dcreload", reloadSubCommand);
         subcommands.put("broadcast", broadcastSubCommand);
         subcommands.put("bc", broadcastSubCommand);

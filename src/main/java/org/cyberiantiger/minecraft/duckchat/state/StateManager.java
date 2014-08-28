@@ -38,6 +38,7 @@ public class StateManager {
     private Address localAddress = null;
     // Server names by address.
     private final Map<Address,String> servers = new HashMap<Address,String>();
+    private final Map<String,Address> serversByName = new HashMap<String,Address>();
     // All players, keyed on identifier.
     private final Map<String,Member> members = new HashMap<String,Member>();
     // All channels.
@@ -110,6 +111,8 @@ public class StateManager {
 
     public void clear() {
         synchronized (LOCK) {
+            servers.clear();
+            serversByName.clear();
             members.clear();
             channels.clear();
         }
@@ -152,6 +155,9 @@ public class StateManager {
             List<Member> memberList = (List<Member>) Util.objectFromStream(dataIn);
             List<ChatChannel> channelList = (List<ChatChannel>) Util.objectFromStream(dataIn);
             servers.putAll(remoteServers);
+            for (Map.Entry<Address, String> e : servers.entrySet()) {
+                serversByName.put(e.getValue(), e.getKey());
+            }
             for (Member m : memberList) {
                 // These should never be local.
                 members.put(m.getIdentifier(), m);
@@ -221,6 +227,7 @@ public class StateManager {
                 Map.Entry<Address,String> e = i.next();
                 if (!addresses.contains(e.getKey())) {
                     removed.put(e.getKey(), e.getValue());
+                    serversByName.remove(e.getValue());
                     i.remove();
                 }
             }
@@ -229,6 +236,7 @@ public class StateManager {
                     String name = plugin.getNodeName(addr);
                     if (name != null) {
                         servers.put(addr, name);
+                        serversByName.put(name, addr);
                         added.put(addr, name);
                     }
                 }
@@ -260,6 +268,7 @@ public class StateManager {
     void onServerCreate(Address src, String name) {
         boolean created;
         synchronized(LOCK) {
+            serversByName.put(name, src);
             created = servers.put(src, name) == null;
         }
         if (created) {
@@ -572,6 +581,12 @@ public class StateManager {
             }
         }
         return ret;
+    }
+
+    public Address getServerAddress(String nodename) {
+        synchronized(LOCK) {
+            return serversByName.get(nodename);
+        }
     }
 
     public List<String> getChannels(String identifier) {

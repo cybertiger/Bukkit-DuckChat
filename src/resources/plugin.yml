@@ -7,7 +7,7 @@ softdepends:
 commands:
   duckchat:
     description: The main DuckChat command.
-    usage: /<command> channels|channel|chlist|part|join|say|me|msg|reply|reload|broadcast
+    usage: /<command> channels|channel|chlist|part|join|say|me|msg|reply|reload|broadcast|rexec
     aliases:
             - dc
             - channels
@@ -27,6 +27,7 @@ commands:
             - whisper
             - broadcast
             - bc
+            - rexec
 # Commented out because Bukkit permissions / Dinner perms are broken and cause lag.
 #permissions:
 #        duckchat.channels:
@@ -74,3 +75,6 @@ commands:
 #        duckchat.broadcast.format:
 #                default: op
 #                description: Allow usage of format codes with & in broadcasts.
+#        duckchat.rexec:
+#                default: op
+#                description: Allow usage of the rexec command to execute commands on a remote server as console.
