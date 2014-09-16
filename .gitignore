@@ -18,8 +18,6 @@ build.xml
 site/downloads/*
 site/javadoc/*
 
-# Maven target directory
-target/*
-
-# Why?
-dependency-reduced-pom.xml
+# Maven generated files.
+*/target/*
+*/dependency-reduced-pom.xml

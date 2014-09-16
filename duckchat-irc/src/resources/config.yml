@@ -1,0 +1,22 @@
+# Example irc bridge.
+#ircBridges:
+#    test:
+#        ssl: false
+#        host: localhost
+#        port: 6667
+#        nick: DuckChat
+#        password: ''
+#        username: 'bot'
+#        realm: 'localhost'
+#        messageFormat: '[global %s@IRC] %s'
+#        actionFormat: '[global] *%s@IRC %s'
+#        channels:
+#            global: '#yourchannel'
+#       filters:
+#            '\.com': 'matecraft.org'
+                
+messages:
+        irc:
+                playerlist:
+                        header: '%2$d players playing Minecraft on %1$d servers.'
+                        line: '%s(%d): %s'

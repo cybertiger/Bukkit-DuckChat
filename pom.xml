@@ -1,8 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cyberiantiger.minecraft</groupId>
-  <artifactId>duckchat</artifactId>
+  <artifactId>duckchat-parent</artifactId>
   <version>1.5-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>duckchat-core</module>
+    <module>duckchat-bukkit</module>
+    <module>duckchat-irc</module>
+  </modules>
   <scm>
     <url>https://github.com/cybertiger/Bukkit-DuckChat/</url>
     <connection>scm:git:git://github.com/cybertiger/Bukkit-DuckChat.git</connection>
@@ -29,19 +35,6 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
     <extensions>
       <extension>
@@ -66,25 +59,6 @@
         <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
     </repository>
   </repositories>
-  <dependencies>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.7.9-R0.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jgroups</groupId>
-      <artifactId>jgroups</artifactId>
-      <version>3.5.0.CR2</version>
-    </dependency>
-    <dependency>
-      <groupId>net.milkbowl.vault</groupId>
-      <artifactId>Vault</artifactId>
-      <version>1.2.32</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
   <distributionManagement>
     <repository>
       <id>cyberiantiger.repo</id>
