@@ -2,15 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.cyberiantiger.minecraft.duckchat.irc.command;
+package org.cyberiantiger.minecraft.duckchat.bukkit.command;
 
 import java.util.List;
 import org.bukkit.command.CommandSender;
-import org.cyberiantiger.minecraft.duckchat.irc.Main;
-import org.cyberiantiger.minecraft.duckchat.bukkit.command.PermissionException;
-import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommand;
-import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommandException;
-import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 
 /**
  *
@@ -29,8 +25,8 @@ public class ReloadSubCommand extends SubCommand<Main> {
 
     @Override
     public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchatirc.reload")) {
-            throw new PermissionException("duckchatirc.reload");
+        if (!sender.hasPermission("duckchat.reload")) {
+            throw new PermissionException("duckchat.reload");
         }
         if (args.length != 0) {
             throw new UsageException();

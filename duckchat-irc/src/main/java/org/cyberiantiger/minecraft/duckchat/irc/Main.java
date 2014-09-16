@@ -7,7 +7,6 @@ package org.cyberiantiger.minecraft.duckchat.irc;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import org.cyberiantiger.minecraft.duckchat.command.SubCommand;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,14 +17,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.cyberiantiger.minecraft.duckchat.command.PermissionException;
-import org.cyberiantiger.minecraft.duckchat.command.SenderTypeException;
-import org.cyberiantiger.minecraft.duckchat.command.SubCommandException;
-import org.cyberiantiger.minecraft.duckchat.command.UsageException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommand;
+import org.cyberiantiger.minecraft.duckchat.bukkit.command.PermissionException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.command.SenderTypeException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommandException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.state.StateManager;
 import org.cyberiantiger.minecraft.duckchat.irc.command.ReloadSubCommand;
 import org.cyberiantiger.minecraft.duckchat.irc.config.Config;
 import org.cyberiantiger.minecraft.duckchat.irc.config.IRCLinkConfig;
-import org.cyberiantiger.minecraft.duckchat.state.StateManager;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -38,7 +38,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 public class Main extends JavaPlugin implements Listener {
     private static final String CONFIG = "config.yml";
 
-    private org.cyberiantiger.minecraft.duckchat.Main duckChat;
+    private org.cyberiantiger.minecraft.duckchat.bukkit.Main duckChat;
     private final List<IRCLink> ircLinks = new ArrayList();
     private final Timer reconnectTimer = new Timer();
 
@@ -89,7 +89,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onEnable() {
         super.saveDefaultConfig();
 
-        duckChat = (org.cyberiantiger.minecraft.duckchat.Main) getServer().getPluginManager().getPlugin("DuckChat");
+        duckChat = (org.cyberiantiger.minecraft.duckchat.bukkit.Main) getServer().getPluginManager().getPlugin("DuckChat");
         if (duckChat == null) {
             getLogger().severe("Disabling, DuckChat not found");
             getServer().getPluginManager().disablePlugin(this);
