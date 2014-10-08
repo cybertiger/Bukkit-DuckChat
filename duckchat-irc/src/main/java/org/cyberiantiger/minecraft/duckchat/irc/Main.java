@@ -23,7 +23,6 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.StateManager;
-import org.cyberiantiger.minecraft.duckchat.irc.command.ReloadSubCommand;
 import org.cyberiantiger.minecraft.duckchat.irc.config.Config;
 import org.cyberiantiger.minecraft.duckchat.irc.config.IRCLinkConfig;
 import org.yaml.snakeyaml.Yaml;
@@ -38,7 +37,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 public class Main extends JavaPlugin implements Listener {
     private static final String CONFIG = "config.yml";
 
-    private Map<String, SubCommand> subcommands = new LinkedHashMap<String, SubCommand>();
+    private IRCCommandExecutor commandExecutor;
     private org.cyberiantiger.minecraft.duckchat.bukkit.Main duckChat;
     private final List<IRCLink> ircLinks = new ArrayList();
     private final Timer reconnectTimer = new Timer();
@@ -89,7 +88,9 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.saveDefaultConfig();
-        subcommands.put("reload", new ReloadSubCommand(this));
+        commandExecutor = new IRCCommandExecutor(this);
+        getCommand("duckchatirc").setExecutor(commandExecutor);
+        getCommand("duckchatirc").setTabCompleter(commandExecutor);
         duckChat = (org.cyberiantiger.minecraft.duckchat.bukkit.Main) getServer().getPluginManager().getPlugin("DuckChat");
         if (duckChat == null) {
             getLogger().severe("Disabling, DuckChat not found");
@@ -116,69 +117,6 @@ public class Main extends JavaPlugin implements Listener {
     public void onDisable() {
         reconnectTimer.cancel();
         disconnect();
-    }
-
-
-    private void executeCommand(CommandSender sender, SubCommand cmd, String label, String[] args) {
-        try {
-            cmd.onCommand(sender, args);
-        } catch (SenderTypeException ex) {
-            sender.sendMessage(translate("error.wrongsender"));
-        } catch (PermissionException ex) {
-            sender.sendMessage(translate("error.permission", ex.getPermission()));
-        } catch (UsageException ex) {
-            sender.sendMessage(translate(cmd.getName() + ".usage", label));
-        } catch (SubCommandException ex) {
-            sender.sendMessage(translate("error.generic", ex.getMessage()));
-        }
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // Check for label matches.
-        for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
-                if(label.equalsIgnoreCase(e.getKey())) {
-                    executeCommand(sender, e.getValue(), label, args);
-                    return true;
-                }
-        }
-        // Check for second argument matches.
-        if (args.length >= 1) {
-            for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
-                if (e.getKey().equalsIgnoreCase(args[0])) {
-                    label += " " + args[0];
-                    String[] newArgs = new String[args.length-1];
-                    System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-                    executeCommand(sender, e.getValue(), label, newArgs);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
-            if(label.equalsIgnoreCase(e.getKey())) {
-                return e.getValue().onTabComplete(sender, args);
-            } else if (args.length >= 1 && e.getKey().equalsIgnoreCase(args[0])) {
-                String[] newArgs = new String[args.length-1];
-                System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-                return e.getValue().onTabComplete(sender, newArgs);
-            }
-        }
-        if (args.length == 1) {
-            List<String> result = new ArrayList();
-            String start = args[0].toLowerCase();
-            for (String s : subcommands.keySet()) {
-                if (s.toLowerCase().startsWith(start)) {
-                    result.add(s);
-                }
-            }
-            return result;
-        }
-        return null;
     }
 
     public Timer getReconnectTimer() {
