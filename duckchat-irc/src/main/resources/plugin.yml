@@ -2,7 +2,7 @@ name: "DuckChatIrc"
 version: "${version}-${project.build.number}"
 main: "org.cyberiantiger.minecraft.duckchat.irc.Main"
 website: "http://dev.bukkit.org/server-mods/duckchat-irc/"
-depends:
+depend:
   - DuckChat
 commands: 
   duckchatirc:
