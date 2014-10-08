@@ -98,15 +98,15 @@ public final class Network {
         
     };
 
-    protected void updateStateRPC(Address owner, Class<? extend State> type, Method method, Object[] parameters) {
+    protected <T extends State> void updateStateRPC(Address owner, Class<T> type, Method method, Object[] parameters) {
         
     }
 
     protected void updateState(Address master, State data) {
         Class<? extends State> type = data.getClass();
         Key<? extends State> key = new Key(master, type);
-        state.put(new Key<State>(master, type), data);
-        stateUpdater.put(data.getClass(), stateProviders.get(data.getClass()).createStateUpdater(data));
+        state.put(key, data);
+        stateUpdater.put(key, stateProviders.get(data.getClass()).createStateUpdater(data));
         // TODO update listeners.
     }
 
