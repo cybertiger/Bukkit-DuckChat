@@ -38,6 +38,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 public class Main extends JavaPlugin implements Listener {
     private static final String CONFIG = "config.yml";
 
+    private Map<String, SubCommand> subcommands = new LinkedHashMap<String, SubCommand>();
     private org.cyberiantiger.minecraft.duckchat.bukkit.Main duckChat;
     private final List<IRCLink> ircLinks = new ArrayList();
     private final Timer reconnectTimer = new Timer();
@@ -88,7 +89,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.saveDefaultConfig();
-
+        subcommands.put("reload", new ReloadSubCommand(this));
         duckChat = (org.cyberiantiger.minecraft.duckchat.bukkit.Main) getServer().getPluginManager().getPlugin("DuckChat");
         if (duckChat == null) {
             getLogger().severe("Disabling, DuckChat not found");
@@ -117,10 +118,6 @@ public class Main extends JavaPlugin implements Listener {
         disconnect();
     }
 
-    private Map<String, SubCommand> subcommands = new LinkedHashMap<String, SubCommand>();
-    {
-        subcommands.put("reload", new ReloadSubCommand(this));
-    }
 
     private void executeCommand(CommandSender sender, SubCommand cmd, String label, String[] args) {
         try {
