@@ -1,6 +1,6 @@
 name: "DuckChat"
 version: "${version}-${project.build.number}"
-main: "org.cyberiantiger.minecraft.duckchat.Main"
+main: "org.cyberiantiger.minecraft.duckchat.bukkit.Main"
 website: "http://dev.bukkit.org/server-mods/duckchat/"
 softdepends:
         - Vault
