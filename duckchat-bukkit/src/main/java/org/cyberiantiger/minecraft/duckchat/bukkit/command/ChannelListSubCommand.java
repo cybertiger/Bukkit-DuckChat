@@ -16,7 +16,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 public class ChannelListSubCommand extends SubCommand<Main> {
 
     public ChannelListSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.channellist");
     }
 
     @Override
@@ -29,10 +29,7 @@ public class ChannelListSubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchat.channellist")) {
-            throw new PermissionException("duckchat.channellist");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();

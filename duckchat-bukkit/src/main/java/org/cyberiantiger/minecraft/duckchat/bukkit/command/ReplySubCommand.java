@@ -15,7 +15,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 public class ReplySubCommand extends SubCommand<Main> {
 
     public ReplySubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.reply");
     }
 
     @Override
@@ -24,11 +24,7 @@ public class ReplySubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        // Permission.
-        if (!sender.hasPermission("duckchat.reply")) {
-            throw new PermissionException("duckchat.reply");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         // Sender
         String senderIdentifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (senderIdentifier == null) {

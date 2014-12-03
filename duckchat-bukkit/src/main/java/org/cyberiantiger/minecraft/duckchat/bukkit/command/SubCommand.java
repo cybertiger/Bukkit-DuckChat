@@ -14,14 +14,24 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public abstract class SubCommand<T extends JavaPlugin> {
     protected final T plugin;
+    protected final String permission;
 
-    public SubCommand(T plugin) {
+    public SubCommand(T plugin, String permission) {
         this.plugin = plugin;
+        this.permission = permission;
     }
 
     public abstract List<String> onTabComplete(CommandSender sender, String... args);
 
-    public abstract void onCommand(CommandSender sender, String... args) throws SubCommandException;
+    public final void onCommand(CommandSender sender, String... args) throws SubCommandException {
+        if (permission != null) {
+            if (!sender.hasPermission(permission))
+                throw new PermissionException(permission);
+        }
+        doCommand(sender, args);
+    }
+
+    protected abstract void doCommand(CommandSender sender, String... args) throws SubCommandException;
 
     public abstract String getName();
 

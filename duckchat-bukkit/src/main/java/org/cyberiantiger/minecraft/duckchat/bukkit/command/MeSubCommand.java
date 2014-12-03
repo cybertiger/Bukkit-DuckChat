@@ -15,14 +15,11 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 public class MeSubCommand extends SubCommand<Main> {
 
     public MeSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.me");
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchat.me")) {
-            throw new PermissionException("duckchat.me");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         String identifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (identifier == null) {
             throw new SenderTypeException();

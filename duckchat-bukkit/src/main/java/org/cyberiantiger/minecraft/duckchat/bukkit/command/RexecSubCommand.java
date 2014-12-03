@@ -17,7 +17,7 @@ import org.jgroups.Address;
 public class RexecSubCommand extends SubCommand<Main> {
 
     public RexecSubCommand(Main main) {
-        super(main);
+        super(main, "duckchat.rexec");
     }
 
     @Override
@@ -26,7 +26,7 @@ public class RexecSubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         if (!sender.hasPermission("duckchat.rexec")) {
             throw new PermissionException("duckchat.rexec");
         }

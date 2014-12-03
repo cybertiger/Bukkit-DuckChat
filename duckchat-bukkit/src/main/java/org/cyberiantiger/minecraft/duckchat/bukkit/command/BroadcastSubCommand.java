@@ -16,7 +16,7 @@ public class BroadcastSubCommand extends SubCommand<Main>
 {
 
     public BroadcastSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.broadcast");
     }
 
     @Override
@@ -25,7 +25,7 @@ public class BroadcastSubCommand extends SubCommand<Main>
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         boolean global = args.length > 0 && "-g".equals(args[0]);
         if (args.length == (global ? 1 : 0)) {
             throw new UsageException();

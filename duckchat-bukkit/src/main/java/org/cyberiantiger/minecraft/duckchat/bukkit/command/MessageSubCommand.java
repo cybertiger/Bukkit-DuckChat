@@ -15,7 +15,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 public class MessageSubCommand extends SubCommand<Main> {
 
     public MessageSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.message");
     }
 
     @Override
@@ -28,10 +28,7 @@ public class MessageSubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchat.message")) {
-            throw new PermissionException("duckchat.message");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         String senderIdentifier = plugin.getCommandSenderManager().getIdentifier(sender);
         if (senderIdentifier == null) {
             throw new SenderTypeException();

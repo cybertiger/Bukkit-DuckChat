@@ -15,7 +15,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.Main;
 public class ReloadSubCommand extends SubCommand<Main> {
 
     public ReloadSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchat.reload");
     }
 
     @Override
@@ -24,10 +24,7 @@ public class ReloadSubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchat.reload")) {
-            throw new PermissionException("duckchat.reload");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         if (args.length != 0) {
             throw new UsageException();
         }

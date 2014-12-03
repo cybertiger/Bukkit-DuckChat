@@ -7,7 +7,6 @@ package org.cyberiantiger.minecraft.duckchat.irc.command;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.cyberiantiger.minecraft.duckchat.irc.Main;
-import org.cyberiantiger.minecraft.duckchat.bukkit.command.PermissionException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommand;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
@@ -19,7 +18,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
 public class ReloadSubCommand extends SubCommand<Main> {
 
     public ReloadSubCommand(Main plugin) {
-        super(plugin);
+        super(plugin, "duckchatirc.reload");
     }
 
     @Override
@@ -28,10 +27,7 @@ public class ReloadSubCommand extends SubCommand<Main> {
     }
 
     @Override
-    public void onCommand(CommandSender sender, String... args) throws SubCommandException {
-        if (!sender.hasPermission("duckchatirc.reload")) {
-            throw new PermissionException("duckchatirc.reload");
-        }
+    protected void doCommand(CommandSender sender, String... args) throws SubCommandException {
         if (args.length != 0) {
             throw new UsageException();
         }
