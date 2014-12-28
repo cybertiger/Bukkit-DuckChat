@@ -312,6 +312,7 @@ public class IRCLink {
         } else {
             ircConnection = new IRCConnection(host, port, port, password, nick, username, realmname);
         }
+        ircConnection.setEncoding("UTF-8");
         ircConnection.setDaemon(true);
         ircConnection.setColors(true);
         ircConnection.setPong(true);
