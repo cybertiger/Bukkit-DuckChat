@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.logging.Level;
+import org.bukkit.ChatColor;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.StateManager;
@@ -70,6 +71,9 @@ public class Main extends JavaPlugin implements Listener {
             Yaml configLoader = new Yaml(new CustomClassLoaderConstructor(Config.class, getClass().getClassLoader()));
             configLoader.setBeanAccess(BeanAccess.FIELD);
             this.config = configLoader.loadAs(new FileReader(getConfigFile()), Config.class);
+            for (Map.Entry<String, String> e : config.getMessages().entrySet()) {
+                e.setValue(e.getValue().replace('&', ChatColor.COLOR_CHAR));
+            }
         } catch (IOException ex) {
             getLogger().log(Level.SEVERE, "Error loading configuration", ex);
         } catch (YAMLException ex) {

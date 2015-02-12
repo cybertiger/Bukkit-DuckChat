@@ -133,7 +133,9 @@ public class IRCLink {
                             Collections.sort(playerList, String.CASE_INSENSITIVE_ORDER);
                             playerCount += playerList.size();
                         }
-                        IRCLink.this.ircConnection.doPrivmsg(target, plugin.translate("irc.playerlist.header", serverCount, playerCount));
+                        String tmp = plugin.translate("irc.playerlist.header", serverCount, playerCount);
+                        tmp = ControlCodeTranslator.MINECRAFT.translate(tmp, ControlCodes.IRC, true);
+                        IRCLink.this.ircConnection.doPrivmsg(target, tmp);
                         for (String serverName : servers) {
                             List<String> playerList = players.get(serverName);
                             StringBuilder playerListString = new StringBuilder();
@@ -143,7 +145,9 @@ public class IRCLink {
                                 }
                                 playerListString.append(playerList.get(i));
                             }
-                            IRCLink.this.ircConnection.doPrivmsg(target, plugin.translate("irc.playerlist.line", serverName, playerList.size(), playerListString));
+                            tmp = plugin.translate("irc.playerlist.line", serverName, playerList.size(), playerListString);
+                            tmp = ControlCodeTranslator.MINECRAFT.translate(tmp, ControlCodes.IRC, true);
+                            IRCLink.this.ircConnection.doPrivmsg(target, tmp);
                         }
                     } else {
                         msg = ControlCodeTranslator.IRC.translate(msg, ControlCodes.MINECRAFT, true);

@@ -229,6 +229,9 @@ public class Main extends JavaPlugin implements Listener {
         try {
             Yaml languageLoader = new Yaml();
             Map<String, String> messages = (Map<String, String>) languageLoader.load( new InputStreamReader( new BufferedInputStream( getClass().getClassLoader().getResourceAsStream(LANGUAGE)), Charsets.UTF_8));
+            for (Map.Entry<String,String> e : messages.entrySet()) {
+                this.messages.put(e.getKey(), e.getValue().replace('&', ChatColor.COLOR_CHAR));
+            }
             this.messages.putAll(messages);
         } catch (YAMLException ex) {
             getLogger().log(Level.SEVERE, "Error loading default language.yml", ex);
@@ -236,7 +239,9 @@ public class Main extends JavaPlugin implements Listener {
         try {
             Yaml languageLoader = new Yaml();
             Map<String, String> messages = (Map<String, String>) languageLoader.load(new InputStreamReader(new BufferedInputStream(new FileInputStream(getLanguageFile())), Charsets.UTF_8));
-            this.messages.putAll(messages);
+            for (Map.Entry<String,String> e : messages.entrySet()) {
+                this.messages.put(e.getKey(), e.getValue().replace('&', ChatColor.COLOR_CHAR));
+            }
         } catch (IOException|YAMLException ex) {
             getLogger().log(Level.SEVERE, "Error loading language.yml", ex);
             getLogger().severe("Your language.yml has fatal errors, using defaults.");
