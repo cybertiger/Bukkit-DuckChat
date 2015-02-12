@@ -32,7 +32,7 @@ say.usage: '/%s <message>'
 message.sendformat: '&6[me -> %2$s]&r %3$s'
 message.receiveformat: '&6[%1$s -> me]&r %3$s'
 message.echoto: '%2$s'
-message.broadcast: '%s'
+message.broadcast: '&r&6[&4Broadcast&6]&a %s'
 message.notfound: 'No player called %s found.'
 message.usage: '/%s <player> <message>'
 
