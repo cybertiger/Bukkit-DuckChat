@@ -29,52 +29,55 @@ commands:
             - bc
             - rexec
 # Commented out because Bukkit permissions / Dinner perms are broken and cause lag.
-#permissions:
-#        duckchat.channels:
-#                default: op
-#                description: Allow usage of the channels command.
-#        duckchat.channel:
-#                default: op
-#                description: Allow usage of the channel command.
-#        duckchat.join:
-#                default: op
-#                description: Allow usage of the join command.
-#        duckchat.part:
-#                default: op
-#                description: Allow usage of the part command.
-#        duckchat.me:
-#                default: op
-#                description: Allow usage of the me command.
-#        duckchat.message:
-#                default: op
-#                description: Allow usage of the message command.
-#        duckchat.reply:
-#                default: op
-#                description: Allow usage of the reply command.
-#        duckchat.reload:
-#                default: op
-#                description: Allow usage of the reload command.
-#        duckchat.say:
-#                default: op
-#                description: Allow usage of the say command.
-#        duckchat.chat.color:
-#                default: op
-#                description: Allow usage of color codes with & in chat.
-#        duckchat.chat.format:
-#                default: op
-#                description: Allow usage of format codes with & in chat.
-#        duckchat.msg.color:
-#                default: op
-#                description: Allow usage of color codes with & in messages.
-#        duckchat.msg.format:
-#                default: op
-#                description: Allow usage of format codes with & in messages.
-#        duckchat.broadcast.color:
-#                default: op
-#                description: Allow usage of color codes with & in broadcasts.
-#        duckchat.broadcast.format:
-#                default: op
-#                description: Allow usage of format codes with & in broadcasts.
-#        duckchat.rexec:
-#                default: op
-#                description: Allow usage of the rexec command to execute commands on a remote server as console.
+permissions:
+        duckchat.channels:
+                default: true
+                description: Allow usage of the channels command.
+        duckchat.channel:
+                default: true
+                description: Allow usage of the channel command.
+        duckchat.join:
+                default: true
+                description: Allow usage of the join command.
+        duckchat.part:
+                default: true
+                description: Allow usage of the part command.
+        duckchat.me:
+                default: true
+                description: Allow usage of the me command.
+        duckchat.message:
+                default: true
+                description: Allow usage of the message command.
+        duckchat.reply:
+                default: true
+                description: Allow usage of the reply command.
+        duckchat.reload:
+                default: op
+                description: Allow usage of the reload command.
+        duckchat.say:
+                default: op
+                description: Allow usage of the say command.
+        duckchat.chat.color:
+                default: op
+                description: Allow usage of color codes with & in chat.
+        duckchat.chat.format:
+                default: op
+                description: Allow usage of format codes with & in chat.
+        duckchat.msg.color:
+                default: op
+                description: Allow usage of color codes with & in messages.
+        duckchat.msg.format:
+                default: op
+                description: Allow usage of format codes with & in messages.
+        duckchat.broadcast:
+                default: op
+                description: Allow usage of the broadcast command.
+        duckchat.broadcast.color:
+                default: op
+                description: Allow usage of color codes with & in broadcasts.
+        duckchat.broadcast.format:
+                default: op
+                description: Allow usage of format codes with & in broadcasts.
+        duckchat.rexec:
+                default: op
+                description: Allow usage of the rexec command to execute commands on a remote server as console.

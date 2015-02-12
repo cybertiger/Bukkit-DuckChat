@@ -1,0 +1,64 @@
+chat.nochannel: 'Your current channel is invalid.'
+
+channels.header: '====== Channels ======'
+channels.channel: '%s'
+channels.joinedchannel: '*%s'
+channels.footer: '======================'
+channels.usage: '/%s'
+
+channel.current: 'You are currently talking on %s.'
+channel.notfound: 'Channel %s not found.'
+channel.success: 'You are now talking on %s.'
+channel.usage: '/%s [channel]'
+
+channellist.header: 'Members of channel %s:'
+channellist.notfound: 'Channel %s not found.'
+channellist.usage: '/%s [channel]'
+
+join.nochannel: 'Channel %s does not exist.'
+join.membership: 'You have already joined %s.'
+join.success: 'You have joined %s.'
+join.usage: '/%s <channel>'
+
+part.nochannel: 'Channel %s does not exist.'
+part.membership: 'You are not a member of %s.'
+part.success: 'You have left %s.'
+part.usage: '/%s <channel>'
+
+me.usage: '/%s <action>'
+
+say.usage: '/%s <message>'
+
+message.sendformat: '&6[me -> %2$s]&r %3$s'
+message.receiveformat: '&6[%1$s -> me]&r %3$s'
+message.echoto: '%2$s'
+message.broadcast: '%s'
+message.notfound: 'No player called %s found.'
+message.usage: '/%s <player> <message>'
+
+
+broadcast.usage: '/%s [-g] <message>'
+
+reply.address: 'You current reply address is: %s'
+reply.notfound: 'You have no reply address.'
+reply.usage: '/%s [message]'
+
+reload.success: 'DuckChat settings reloaded.'
+reload.usage: '/%s'
+
+
+error.wrongsender: 'You cannot use this command from this entry method.'
+error.permission: 'You are missing the required permission: %s.'
+error.generic: 'An error occurred: %s.'
+
+sender.console: '%s@%s'
+
+member.join: '&7%s has joined %s'
+member.leave: '&8%s has left %s'
+
+server.suspect: '&6&l%s may be having issues'
+server.join: '&6&l%s has joined'
+server.leave: '&6&l%s has left'
+
+rexec.usage: '/%s <-g|<server>> <command>'
+

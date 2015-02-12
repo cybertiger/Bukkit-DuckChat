@@ -1,26 +1,30 @@
 # Name of JGroups cluster.
+# 
+# Sets the name of the jgroups cluster to connect to, this must be the same
+# on all the servers you want to be in the same cluster.
 #
 # clusterName: duckchat
 
-# Name of this node, by default this is not set, you probably want to set
-# this to a sensible name for the server.
-# nodename: Survival
+# Name of this server, defaults to using server-name from server.properties. 
+# If you don't wish to set server-name in server.properties, or you wish
+# to use a different value here, uncomment this.
+# nodename: Unknown
 
 # Default channel name.
 defaultChannel: global
 
 # Store players by UUID.
 #
-useUUIDs: false
+useUUIDs: true
 
-# Register channel permissions.
-#
-# registerPermissions: true
+# Use IPv4
+useIPv4: true
+
+# Address to use for multicast networking
+bindAddress: 127.0.0.1
 
 # Network config
-# If not set, will use default JGroups settings.
-# Read the jgroups documentation for how to configure this, calling this
-# config file arcane, would be an understatement.
+# Should not be needed unless you want to try using strange configurations.
 #
 # network: udp.xml
 
@@ -49,84 +53,3 @@ channels:
 #                localAutoJoin: true
 #                globalAutoJoin: false
 #                permission: some.permission
-
-
-# Example irc bridge.
-#irc-bridges:
-#    test:
-#        ssl: false
-#        host: localhost
-#        port: 6667
-#        nick: DuckChat
-#        password: ''
-#        username: 'bot'
-#        realm: 'localhost'
-#        messageFormat: '[global %s@IRC] %s'
-#        actionFormat: '[global] *%s@IRC %s'
-#        channels:
-#            global: '#yourchannel'
-                
-messages:
-        chat:
-                nochannel: 'Your current channel is invalid.'
-        channels:
-                header: '====== Channels ======'
-                channel: '%s'
-                joinedchannel: '*%s'
-                footer: '======================'
-                usage: '/%s'
-        channel:
-                current: 'You are currently talking on %s.'
-                notfound: 'Channel %s not found.'
-                success: 'You are now talking on %s.'
-                usage: '/%s [channel]'
-        channellist:
-                header: 'Members of channel %s:'
-                notfound: 'Channel %s not found.'
-                usage: '/%s [channel]'
-        join:
-                nochannel: 'Channel %s does not exist.'
-                membership: 'You have already joined %s.'
-                success: 'You have joined %s.'
-                usage: '/%s <channel>'
-        part:
-                nochannel: 'Channel %s does not exist.'
-                membership: 'You are not a member of %s.'
-                success: 'You have left %s.'
-                usage: '/%s <channel>'
-        me:
-                usage: '/%s <action>'
-        say:
-                usage: '/%s <message>'
-        message:
-                sendformat: '&6[me -> %2$s]&r %3$s'
-                receiveformat: '&6[%1$s -> me]&r %3$s'
-                echoto: '%2$s'
-                broadcast: '%s'
-                notfound: 'No player called %s found.'
-                usage: '/%s <player> <message>'
-        broadcast:
-                usage: '/%s [-g] <message>'
-        reply:
-                address: 'You current reply address is: %s'
-                notfound: 'You have no reply address.'
-                usage: '/%s [message]'
-        reload:
-                success: 'DuckChat settings reloaded.'
-                usage: '/%s'
-        error:
-                wrongsender: 'You cannot use this command from this entry method.'
-                permission: 'You are missing the required permission: %s.'
-                generic: 'An error occurred: %s.'
-        sender:
-                console: '%s@%s'
-        member:
-                join: '&7%s has joined %s'
-                leave: '&8%s has left %s'
-        server:
-                suspect: '&6&l%s may be having issues'
-                join: '&6&l%s has joined'
-                leave: '&6&l%s has left'
-        rexec:
-                usage: '/%s <-g|<server>> <command>'
-

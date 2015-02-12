@@ -16,7 +16,5 @@
 #            '\.com': 'matecraft.org'
                 
 messages:
-        irc:
-                playerlist:
-                        header: '%2$d players playing Minecraft on %1$d servers.'
-                        line: '%s(%d): %s'
+        irc.playerlist.header: '%2$d players playing Minecraft on %1$d servers.'
+        irc.playerlist.line: '%s(%d): %s'

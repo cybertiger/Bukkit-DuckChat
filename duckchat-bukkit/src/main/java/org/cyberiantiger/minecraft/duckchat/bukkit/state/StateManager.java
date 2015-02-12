@@ -350,8 +350,6 @@ public class StateManager {
         }
         if (update) {
             onChannelUpdate(name, messageFormat, actionFormat, flags, permission);
-        } else {
-            plugin.getCommandSenderManager().registerPermission(permission);
         }
         if (actions != null) {
             for (Runnable r : actions) {
@@ -372,7 +370,6 @@ public class StateManager {
             chatChannel.setFlags(flags);
             chatChannel.setPermission(permission);
         }
-        plugin.getCommandSenderManager().registerPermission(permission);
     }
 
     void onChannelDelete(String name) {

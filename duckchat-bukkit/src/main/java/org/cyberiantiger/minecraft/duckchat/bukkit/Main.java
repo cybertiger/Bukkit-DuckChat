@@ -4,11 +4,20 @@
  */
 package org.cyberiantiger.minecraft.duckchat.bukkit;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
+import java.io.BufferedInputStream;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.DuckReceiver;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.ChatChannel;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.ChannelMessageData;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommand;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -21,8 +30,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -42,6 +49,8 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.command.SaySubCommand;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SenderTypeException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommandException;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.UsageException;
+import org.cyberiantiger.minecraft.duckchat.bukkit.config.ChannelConfig;
+import org.cyberiantiger.minecraft.duckchat.bukkit.config.Config;
 import org.cyberiantiger.minecraft.duckchat.bukkit.depend.PlayerTitles;
 import org.cyberiantiger.minecraft.duckchat.bukkit.depend.VaultPlayerTitles;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.ChannelCreateData;
@@ -58,22 +67,31 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.state.StateManager;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
+import org.yaml.snakeyaml.error.YAMLException;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 
 /**
  *
  * @author antony
  */
 public class Main extends JavaPlugin implements Listener {
+    private static final String CONFIG = "config.yml";
+    private static final String LANGUAGE = "language.yml";
 
     private final StateManager state = new StateManager(this);
     private final CommandSenderManager commandSenderManager = new CommandSenderManager(this);
     private final AtomicReference<PlayerTitles> playerTitles = new AtomicReference<PlayerTitles>(PlayerTitles.DEFAULT);
 
-    private String clusterName;
+    private Config config;
     private Channel channel;
+    /*
+    private String clusterName;
     private boolean useUUIDs;
     private boolean registerPermissions;
     private String defaultChannel;
+    */
 
 
     // Messages.
@@ -92,24 +110,20 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     public boolean useUUIDs() {
-        return useUUIDs;
+        return config.isUseUUIDs();
     }
 
     public String getDefaultChannel() {
-        return defaultChannel;
+        return config.getDefaultChannel();
     }
 
-    public boolean getRegisterPermissions() {
-        return registerPermissions;
-    }
-
-
-    // Net
     private void connect() throws Exception {
-        FileConfiguration config = getConfig();
-        String nodename = config.getString("nodename");
-        if (config.isString("network")) {
-            File networkConfig = new File(getDataFolder(), config.getString("network"));
+        // XXX: Setting stuff globally is bad
+        System.setProperty("java.net.preferIPv4Stack", String.valueOf(config.isUseIPv4()));
+        System.setProperty("jgroups.bind_addr", config.getBindAddress());
+        String nodename = config.getNodeName() == null ? getServer().getServerName() : config.getNodeName();
+        if (config.getNetwork() != null) {
+            File networkConfig = new File(getDataFolder(), config.getNetwork());
             channel = new JChannel(networkConfig);
         } else {
             channel = new JChannel();
@@ -121,7 +135,7 @@ public class Main extends JavaPlugin implements Listener {
         // a channel.close();
         channel.getProtocolStack().getTransport().disableDiagnostics();
         channel.setReceiver(new DuckReceiver(getState()));
-        channel.connect(clusterName);
+        channel.connect(config.getClusterName());
         getState().setLocalAddress(channel.getAddress());
         channel.getState(null, 0);
 
@@ -135,22 +149,20 @@ public class Main extends JavaPlugin implements Listener {
         sendMemberCreate(getServer().getConsoleSender());
 
         // Register our channels.
-        if (config.isConfigurationSection("channels")) {
-            ConfigurationSection channelsSection = config.getConfigurationSection("channels");
-            for (String key : channelsSection.getKeys(false)) {
-                ConfigurationSection channelSection = channelsSection.getConfigurationSection(key);
-                Address addr = null;
-                if (channelSection.getBoolean("owned", true)) {
-                    addr = channel.getAddress();
-                }
-                String messageFormat = channelSection.getString("messageFormat", "[%1$s %5$s%6$s%7$s@%2$s] %8$s");
-                String actionFormat = channelSection.getString("actionFormat", "[%1$s] %5$s%6$s%7$s@%2$s %8$s");
-                BitSet flags = new BitSet();
-                String permission = channelSection.getString("permission");
-                flags.set(ChatChannel.FLAG_LOCAL_AUTO_JOIN, channelSection.getBoolean("localAutoJoin", false));
-                flags.set(ChatChannel.FLAG_GLOBAL_AUTO_JOIN, channelSection.getBoolean("globalAutoJoin", false));
-                sendData(new ChannelCreateData(addr, key, messageFormat, actionFormat, flags, permission));
+        for (Map.Entry<String, ChannelConfig> e : config.getChannels().entrySet()) {
+            String name = e.getKey();
+            ChannelConfig channelConfig = e.getValue();
+            Address addr = null;
+            if (channelConfig.isOwned()) {
+                addr = channel.getAddress();
             }
+            String messageFormat = channelConfig.getMessageFormat();
+            String actionFormat = channelConfig.getActionFormat();
+            BitSet flags = new BitSet();
+            String permission = channelConfig.getPermission();
+            flags.set(ChatChannel.FLAG_LOCAL_AUTO_JOIN, channelConfig.isLocalAutoJoin());
+            flags.set(ChatChannel.FLAG_GLOBAL_AUTO_JOIN, channelConfig.isGlobalAutoJoin());
+            sendData(new ChannelCreateData(addr, name, messageFormat, actionFormat, flags, permission));
         }
         
     }
@@ -164,28 +176,78 @@ public class Main extends JavaPlugin implements Listener {
         state.clear();
     }
 
-    private void load() {
-        FileConfiguration config = getConfig();
-        clusterName = config.getString("clusterName", "duckchat");
-        defaultChannel = config.getString("defaultChannel");
-        useUUIDs = config.getBoolean("useUUIDs", true);
-        registerPermissions = config.getBoolean("registerPermissions", true);
-        
-        if (config.isConfigurationSection("messages")) {
-            ConfigurationSection messageSection = config.getConfigurationSection("messages");
-            for (String key : messageSection.getKeys(true)) {
-                if (messageSection.isString(key)) {
-                    messages.put(key, messageSection.getString(key).replace('&', '\u00a7'));
+    private File getConfigFile() {
+        return new File(getDataFolder(), CONFIG);
+    }
+
+    private File getLanguageFile() {
+        return new File(getDataFolder(), LANGUAGE);
+    }
+
+    private void copyDefault(String name, File dest) {
+        if (!dest.exists()) {
+            try {
+                InputStream in = getClass().getClassLoader().getResourceAsStream(name);
+                if (in != null) {
+                    try {
+                        OutputStream out = new FileOutputStream(dest);
+                        try {
+                            ByteStreams.copy(in, out);
+                        } finally {
+                            out.close();
+                        }
+                    } finally {
+                        in.close();
+                    }
                 }
+            } catch (IOException ex) {
+                getLogger().log(Level.WARNING, "Error copying default " + dest, ex);
             }
+        }
+    }
+
+    private void copyDefaults() {
+        File dataFolder = getDataFolder();
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+        copyDefault(CONFIG, getConfigFile());
+        copyDefault(LANGUAGE, getLanguageFile());
+    }
+    
+    private void loadConfig() {
+        config = new Config();
+        try {
+            Yaml configLoader = new Yaml(new CustomClassLoaderConstructor(Config.class, getClass().getClassLoader()));
+            configLoader.setBeanAccess(BeanAccess.FIELD);
+            config = configLoader.loadAs(new InputStreamReader(new BufferedInputStream(new FileInputStream(getConfigFile())), Charsets.UTF_8), Config.class);
+        } catch (IOException|YAMLException ex) {
+            getLogger().log(Level.SEVERE, "Error loading config.yml", ex);
+            getLogger().severe("Your config.yml has fatal errors, using defaults.");
+        }
+        this.messages.clear();
+        try {
+            Yaml languageLoader = new Yaml();
+            Map<String, String> messages = (Map<String, String>) languageLoader.load( new InputStreamReader( new BufferedInputStream( getClass().getClassLoader().getResourceAsStream(LANGUAGE)), Charsets.UTF_8));
+            this.messages.putAll(messages);
+        } catch (YAMLException ex) {
+            getLogger().log(Level.SEVERE, "Error loading default language.yml", ex);
+        }
+        try {
+            Yaml languageLoader = new Yaml();
+            Map<String, String> messages = (Map<String, String>) languageLoader.load(new InputStreamReader(new BufferedInputStream(new FileInputStream(getLanguageFile())), Charsets.UTF_8));
+            this.messages.putAll(messages);
+        } catch (IOException|YAMLException ex) {
+            getLogger().log(Level.SEVERE, "Error loading language.yml", ex);
+            getLogger().severe("Your language.yml has fatal errors, using defaults.");
         }
     }
 
     @Override
     public void onEnable() {
-        super.saveDefaultConfig();
+        copyDefaults();
+        loadConfig();
         getServer().getPluginManager().registerEvents(new DuckListener(this), this);
-        load();
         try {
             connect();
         } catch (Exception ex) {
@@ -202,8 +264,7 @@ public class Main extends JavaPlugin implements Listener {
 
     public void reload() {
         disconnect();
-        reloadConfig();
-        load();
+        loadConfig();
         try {
             connect();
         } catch (Exception ex) {

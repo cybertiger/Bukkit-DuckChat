@@ -174,30 +174,6 @@ public class CommandSenderManager {
         return sender.hasPermission(permission);
     }
 
-    public void registerPermission(final String permission) {
-        if (!plugin.getRegisterPermissions()) {
-            return;
-        }
-        if (permission == null) {
-            return;
-        }
-        if (!plugin.getServer().isPrimaryThread()) {
-            plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    registerPermission(permission);
-                }
-            });
-            return;
-        }
-        Permission perm = plugin.getServer().getPluginManager().getPermission(permission);
-        if (perm == null) {
-            Permission permObj = new Permission(permission, null, PermissionDefault.OP);
-            plugin.getServer().getPluginManager().addPermission(permObj);
-            permObj.recalculatePermissibles();
-        }
-    }
-
     public void sendMessage(final String identifier, final String message) {
         final CommandSender sender = getPlayer(identifier);
         sendMessage(sender, message);
