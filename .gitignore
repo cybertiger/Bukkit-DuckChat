@@ -21,3 +21,4 @@ site/javadoc/*
 # Maven generated files.
 */target/*
 */dependency-reduced-pom.xml
+/target/
