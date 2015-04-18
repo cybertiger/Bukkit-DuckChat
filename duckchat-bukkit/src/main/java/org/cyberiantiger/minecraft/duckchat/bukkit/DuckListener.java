@@ -54,7 +54,7 @@ public class DuckListener implements Listener {
             String key = ee.getKey();
             if (e.getMessage().startsWith(key)) {
                 String destChannel = ee.getValue();
-                if (plugin.getState().isChannelMember(plugin.getCommandSenderManager().getIdentifier(e.getPlayer()), destChannel)) {
+                if (plugin.getState().isChannelMember(identifier, destChannel)) {
                     e.setCancelled(true);
                     String msg = e.getMessage().substring(key.length());
                     if (msg.length() > 0) {
