@@ -23,6 +23,11 @@ useIPv4: true
 # Address to use for multicast networking
 bindAddress: 127.0.0.1
 
+# Shortcuts for accessing channels.
+# Include a space in the shortcut if you wish it to require a space.
+shortcuts:
+        '! ': global
+
 # Network config
 # Should not be needed unless you want to try using strange configurations.
 #

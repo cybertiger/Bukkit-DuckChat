@@ -6,11 +6,13 @@ package org.cyberiantiger.minecraft.duckchat.bukkit;
 
 import com.google.common.base.Charsets;
 import java.nio.charset.Charset;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -40,6 +42,27 @@ public class DuckListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         plugin.sendMemberCreate(e.getPlayer());
         e.setJoinMessage(null);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onCommandPreProcessEvent(PlayerCommandPreprocessEvent e) {
+        String identifier = plugin.getCommandSenderManager().getIdentifier(e.getPlayer());
+        if (identifier == null) {
+            return;
+        }
+        for (Map.Entry<String,String> ee : plugin.getShortcuts().entrySet()) {
+            String key = ee.getKey();
+            if (e.getMessage().startsWith(key)) {
+                String destChannel = ee.getValue();
+                if (plugin.getState().isChannelMember(plugin.getCommandSenderManager().getIdentifier(e.getPlayer()), destChannel)) {
+                    e.setCancelled(true);
+                    String msg = e.getMessage().substring(key.length());
+                    if (msg.length() > 0) {
+                        plugin.sendChannelMessage(identifier, destChannel, msg);
+                    }
+                }
+            }
+        }
     }
 
     @EventHandler

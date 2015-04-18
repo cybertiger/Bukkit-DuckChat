@@ -19,6 +19,7 @@ public class Config {
     private String defaultChannel = "global";
     private boolean useIPv4 = true;
     private String bindAddress = "127.0.0.1";
+    private Map<String,String> shortcuts = new HashMap<String,String>();
 
     public boolean isUseIPv4() {
         return useIPv4;
@@ -54,4 +55,7 @@ public class Config {
         return defaultChannel;
     }
 
+    public Map<String,String> getShortcuts() {
+        return shortcuts;
+    }
 }
