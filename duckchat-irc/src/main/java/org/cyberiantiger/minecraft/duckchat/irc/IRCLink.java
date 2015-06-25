@@ -172,11 +172,13 @@ public class IRCLink {
         @Override
         public void onRegistered() {
             IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
-            for (IRCAction action : onJoin) {
-                switch (action.getType()) {
-                    case PRIV_MSG:
-                        ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
-                        break;
+            if (onJoin != null) {
+                for (IRCAction action : onJoin) {
+                    switch (action.getType()) {
+                        case PRIV_MSG:
+                            ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
+                            break;
+                    }
                 }
             }
             for (String ircChannel : ircToDuck.keySet()) {
