@@ -4,6 +4,7 @@
  */
 package org.cyberiantiger.minecraft.duckchat.irc.config;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +24,7 @@ public class IRCLinkConfig {
     private String actionFormat;
     private boolean debug;
     private Map<String,String> channels;
+    private List<IRCAction> onJoin;
 
     public String getName() {
         return name;
@@ -70,5 +72,9 @@ public class IRCLinkConfig {
 
     public Map<String, String> getChannels() {
         return channels;
+    }
+
+    public List<IRCAction> getOnJoin() {
+        return onJoin;
     }
 }

@@ -12,8 +12,12 @@
 #        actionFormat: '[global] *%s@IRC %s'
 #        channels:
 #            global: '#yourchannel'
-#       filters:
+#        filters:
 #            '\.com': 'matecraft.org'
+#        onJoin:
+#            - type: PRIV_MSG
+#              target: NickServ
+#              message: identify NICK PASSWORD
                 
 messages:
         irc.playerlist.header: '%2$d players playing Minecraft on %1$d servers.'

@@ -20,6 +20,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.event.MemberLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.ServerJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.ServerLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.ServerSuspectEvent;
+import org.cyberiantiger.minecraft.duckchat.irc.config.IRCAction;
 import org.cyberiantiger.minecraft.duckchat.irc.config.IRCLinkConfig;
 import org.schwering.irc.lib.IRCConnection;
 import org.schwering.irc.lib.IRCEventAdapter;
@@ -169,18 +170,29 @@ public class IRCLink {
         }
 
         @Override
+        public void onRegistered() {
+            IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
+            for (IRCAction action : onJoin) {
+                switch (action.getType()) {
+                    case PRIV_MSG:
+                        ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
+                        break;
+                }
+            }
+            for (String ircChannel : ircToDuck.keySet()) {
+                ircConnection.doJoin(ircChannel);
+            }
+        }
+
+        
+
+        @Override
         public void onNotice(String target, IRCUser user, String msg) {
             plugin.getLogger().info(name + ": Notice to: " + target + " from: " + user + " message: " +  msg);
         }
 
         @Override
         public void onReply(int num, String value, String msg) {
-            if (num == 1) {
-                IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
-                for (String ircChannel : ircToDuck.keySet()) {
-                    ircConnection.doJoin(ircChannel);
-                }
-            }
             plugin.getLogger().info(name + ": Reply " + num + " = " + value + ": " + msg);
         }
         
@@ -242,8 +254,9 @@ public class IRCLink {
     private long lastReconnect = Long.MIN_VALUE;
     private int reconnectCount = 0;
     private TimerTask reconnectTask = null;
+    private final List<IRCAction> onJoin;
 
-    public IRCLink(Main plugin, String name, boolean useSsl, String host, int port, String password, String nick, String username, String realmname, boolean debug, String messageFormat, String actionFormat) {
+    public IRCLink(Main plugin, String name, boolean useSsl, String host, int port, String password, String nick, String username, String realmname, boolean debug, String messageFormat, String actionFormat, List<IRCAction> onJoin) {
         this.plugin = plugin;
         this.name = name;
         this.useSsl = useSsl;
@@ -256,11 +269,12 @@ public class IRCLink {
         this.debug = debug;
         this.messageFormat = messageFormat;
         this.actionFormat = actionFormat;
+        this.onJoin = onJoin;
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
     }
 
     public IRCLink(Main plugin, IRCLinkConfig ircLinkConfig) {
-        this(plugin, ircLinkConfig.getName(), ircLinkConfig.isSsl(), ircLinkConfig.getHost(), ircLinkConfig.getPort(), ircLinkConfig.getPassword(), ircLinkConfig.getNick(), ircLinkConfig.getUsername(), ircLinkConfig.getRealm(), ircLinkConfig.isDebug(), ircLinkConfig.getMessageFormat(), ircLinkConfig.getActionFormat());
+        this(plugin, ircLinkConfig.getName(), ircLinkConfig.isSsl(), ircLinkConfig.getHost(), ircLinkConfig.getPort(), ircLinkConfig.getPassword(), ircLinkConfig.getNick(), ircLinkConfig.getUsername(), ircLinkConfig.getRealm(), ircLinkConfig.isDebug(), ircLinkConfig.getMessageFormat(), ircLinkConfig.getActionFormat(), ircLinkConfig.getOnJoin());
         Map<String,String> channels = ircLinkConfig.getChannels();
         if (channels != null) {
             for (Map.Entry<String,String> e : channels.entrySet()) {
