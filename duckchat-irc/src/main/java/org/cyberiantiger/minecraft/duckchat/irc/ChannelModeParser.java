@@ -31,6 +31,7 @@ public class ChannelModeParser {
             }
         }
         int arg = 0;
+        LOOP:
         for (String s : modes) {
             boolean setFlag = false;
             boolean clearFlag = false;
@@ -70,7 +71,7 @@ public class ChannelModeParser {
                 // We only care about mode changes with arguments so if we run out of
                 // arguments, don't bother parsing the rest.
                 if (arg >= args.size()) 
-                    break;
+                    break LOOP;
             }
         }
     }
