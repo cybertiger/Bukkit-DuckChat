@@ -9,5 +9,6 @@ package org.cyberiantiger.minecraft.duckchat.irc.config;
  * @author antony
  */
 public enum IRCActionType {
-    PRIV_MSG;
+    PRIV_MSG,
+    SEND;
 }

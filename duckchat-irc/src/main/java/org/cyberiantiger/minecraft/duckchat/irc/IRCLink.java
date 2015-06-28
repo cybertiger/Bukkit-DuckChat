@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import java.util.BitSet;
+import java.util.concurrent.Callable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.ChannelMessageEvent;
@@ -24,6 +26,7 @@ import org.cyberiantiger.minecraft.duckchat.irc.config.IRCAction;
 import org.cyberiantiger.minecraft.duckchat.irc.config.IRCLinkConfig;
 import org.schwering.irc.lib.IRCConnection;
 import org.schwering.irc.lib.IRCEventAdapter;
+import org.schwering.irc.lib.IRCModeParser;
 import org.schwering.irc.lib.IRCUser;
 import org.schwering.irc.lib.ssl.SSLIRCConnection;
 
@@ -150,6 +153,28 @@ public class IRCLink {
                             tmp = ControlCodeTranslator.MINECRAFT.translate(tmp, ControlCodes.IRC, true);
                             IRCLink.this.ircConnection.doPrivmsg(target, tmp);
                         }
+                    } else if (msg.startsWith(".command ")) {
+                        final String cmd = msg.substring(".command ".length());
+                        BitSet modes = null;
+                        synchronized (IRCLink.this) {
+                            Map<String,BitSet> users = joinedChannels.get(target);
+                            if (users != null) {
+                                modes = users.get(user.getNick());
+                            }
+                        }
+                        if (modes != null && modes.get(ChannelMode.OWNER.ordinal())) {
+                            postAction = new Runnable() {
+                                public void run() {
+                                    IRCLink.this.plugin.getServer().getScheduler().callSyncMethod(IRCLink.this.plugin, new Callable<Void>() {
+                                        @Override
+                                        public Void call() throws Exception {
+                                            IRCLink.this.plugin.getServer().dispatchCommand(IRCLink.this.plugin.getServer().getConsoleSender(), cmd);
+                                            return null;
+                                        }
+                                    });
+                                }
+                            };
+                        }
                     } else {
                         msg = ControlCodeTranslator.IRC.translate(msg, ControlCodes.MINECRAFT, true);
                         msg = IRCLink.this.plugin.filter(msg);
@@ -169,6 +194,7 @@ public class IRCLink {
             }
         }
 
+        
         @Override
         public void onRegistered() {
             IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
@@ -178,6 +204,9 @@ public class IRCLink {
                         case PRIV_MSG:
                             ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
                             break;
+                        case SEND:
+                            ircConnection.send(action.getMessage());
+                            break;
                     }
                 }
             }
@@ -185,8 +214,6 @@ public class IRCLink {
                 ircConnection.doJoin(ircChannel);
             }
         }
-
-        
 
         @Override
         public void onNotice(String target, IRCUser user, String msg) {
@@ -196,6 +223,39 @@ public class IRCLink {
         @Override
         public void onReply(int num, String value, String msg) {
             plugin.getLogger().info(name + ": Reply " + num + " = " + value + ": " + msg);
+            if (num == 353) {
+                Map<String,BitSet> users = null;
+                synchronized(IRCLink.this) {
+                    // value is something like <nick> " [=*@] " <channel>
+                    // RFC says something completely different.
+                    // So lets just take everything after the bloody # as the channel
+                    int idx = value.indexOf('#');
+                    if (idx != -1) {
+                        value = value.substring(idx);
+                        users = joinedChannels.get(value);
+                        if (users != null) {
+                            plugin.getLogger().warning("Updating user list for: " + value);
+                            for (String s : msg.split(" ")) {
+                                plugin.getLogger().warning("Parsing user list entry: " + s);
+                                s = s.trim();
+                                BitSet flags = new BitSet();
+                                ChannelMode mode;
+                                while (s.length() > 0 && ((mode = ChannelMode.getModeByPrefix(s.charAt(0))) != null)) {
+                                    flags.set(mode.ordinal());
+                                    s = s.substring(1);
+                                }
+                                if (s.length() > 0) {
+                                    plugin.getLogger().warning("Setting flags for:" + s + " to: " + flags);
+                                    users.put(s, flags);
+                                }
+                            }
+                        } else {
+                            plugin.getLogger().warning("No user list for channel: " + value);
+                        }
+                        plugin.getLogger().warning("User list is now: " + joinedChannels);
+                    }
+                }
+            }
         }
         
         @Override
@@ -218,20 +278,66 @@ public class IRCLink {
         }
 
         @Override
+        public void onNick(IRCUser user, String newNick) {
+            plugin.getLogger().warning("User: " + user + " changed nick to: " + newNick);
+            synchronized(IRCLink.this) {
+                for (Map<String,BitSet> users : joinedChannels.values()) {
+                    if (users.containsKey(user.getNick())) {
+                        BitSet flags = users.remove(user.getNick());
+                        users.put(newNick, flags);
+                    }
+                }
+                plugin.getLogger().warning("User list is now: " + joinedChannels);
+            }
+        }
+
+        @Override
+        public void onMode(String chan, IRCUser user, IRCModeParser modeParser) {
+            plugin.getLogger().warning("on channel: " + chan + " user: " + user + " changed mode: " + modeParser.toString());
+            Map<String,BitSet> users;
+            synchronized(IRCLink.this) {
+                users = joinedChannels.get(chan);
+                if (users != null) {
+                    ChannelModeParser parser = new ChannelModeParser(modeParser.getLine());
+                    for (Map.Entry<String, ChannelModeParser.ModeChange> e : parser.getModeChanges().entrySet()) {
+                        String nick = e.getKey();
+                        ChannelModeParser.ModeChange change = e.getValue();
+                        BitSet modes = users.get(nick);
+                        if (modes != null) {
+                            modes.andNot(change.getClearedModes());
+                            modes.or(change.getSetModes());
+                        }
+                    }
+                }
+                plugin.getLogger().warning("User list is now: " + joinedChannels);
+            }
+        }
+
+        @Override
         public void onJoin(String chan, IRCUser user) {
+            plugin.getLogger().warning("User joined on: " + chan + " user: " + user);
             synchronized (IRCLink.this) {
                 if (nick.equals(user.getNick())) {
-                    joinedChannels.put(chan, Boolean.TRUE);
+                    joinedChannels.put(chan, new HashMap<String, BitSet>());
+                } else {
+                    Map<String,BitSet> users = joinedChannels.get(chan);
+                    users.put(user.getNick(), new BitSet());
                 }
+                plugin.getLogger().warning("User list is now: " + joinedChannels);
             }
         }
 
         @Override
         public void onPart(String chan, IRCUser user, String msg) {
+            plugin.getLogger().warning("User parted on: " + chan + " user: " + user + " msg: " + msg);
             synchronized (IRCLink.this) {
                 if(nick.equals(user.getNick())) {
                     joinedChannels.remove(chan);
+                } else {
+                    Map<String,BitSet> users = joinedChannels.get(chan);
+                    users.remove(user.getNick());
                 }
+                plugin.getLogger().warning("User list is now: " + joinedChannels);
             }
         }
     };
@@ -242,7 +348,7 @@ public class IRCLink {
     private final String actionFormat;
     private final Map<String, String> duckToIrc = new HashMap<String, String>();
     private final Map<String, String> ircToDuck = new HashMap<String, String>();
-    private final Map<String, Boolean> joinedChannels = new HashMap<String, Boolean>();
+    private final Map<String, Map<String,BitSet>> joinedChannels = new HashMap<String, Map<String,BitSet>>();
     private final boolean useSsl;
     private final String host;
     private final int port;
