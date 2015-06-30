@@ -33,7 +33,7 @@ public class Main extends JavaPlugin implements Listener {
     private IRCCommandExecutor commandExecutor;
     private org.cyberiantiger.minecraft.duckchat.bukkit.Main duckChat;
     private final List<IRCLink> ircLinks = new ArrayList();
-    private final Timer reconnectTimer = new Timer();
+    private Timer reconnectTimer;
 
 
     // Config
@@ -84,6 +84,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         super.saveDefaultConfig();
+        reconnectTimer = new Timer();
         commandExecutor = new IRCCommandExecutor(this);
         getCommand("duckchatirc").setExecutor(commandExecutor);
         getCommand("duckchatirc").setTabCompleter(commandExecutor);

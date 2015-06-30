@@ -194,25 +194,33 @@ public class IRCLink {
             }
         }
 
-        
-        @Override
-        public void onRegistered() {
-            IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
-            if (onJoin != null) {
-                for (IRCAction action : onJoin) {
-                    switch (action.getType()) {
-                        case PRIV_MSG:
-                            ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
-                            break;
-                        case SEND:
-                            ircConnection.send(action.getMessage());
-                            break;
+        private void afterRegistration() {
+            synchronized (IRCLink.this) {
+                if (!IRCLink.this.registered) {
+                    IRCLink.this.registered = true;
+                    IRCLink.this.plugin.getLogger().info(name + ": Connected to IRC server " + host + ":" + port);
+                    if (onJoin != null) {
+                        for (IRCAction action : onJoin) {
+                            switch (action.getType()) {
+                                case PRIV_MSG:
+                                    ircConnection.doPrivmsg(action.getTarget(), action.getMessage());
+                                    break;
+                                case SEND:
+                                    ircConnection.send(action.getMessage());
+                                    break;
+                            }
+                        }
+                    }
+                    for (String ircChannel : ircToDuck.keySet()) {
+                        ircConnection.doJoin(ircChannel);
                     }
                 }
             }
-            for (String ircChannel : ircToDuck.keySet()) {
-                ircConnection.doJoin(ircChannel);
-            }
+        }
+
+        
+        @Override
+        public void onRegistered() {
         }
 
         @Override
@@ -255,6 +263,9 @@ public class IRCLink {
                         plugin.getLogger().warning("User list is now: " + joinedChannels);
                     }
                 }
+            } else if (num == 1) {
+                // Registered reply.
+                afterRegistration();
             }
         }
         
@@ -262,6 +273,7 @@ public class IRCLink {
         public void onDisconnected() {
             synchronized (IRCLink.this) {
                 IRCLink.this.plugin.getLogger().info(name + ": Disconnected from IRC server" + host + ":" + port);
+                registered = false;
                 joinedChannels.clear();
                 scheduleReconnect();
             }
@@ -361,6 +373,7 @@ public class IRCLink {
     private boolean shouldReconnect = false;
     private long lastReconnect = Long.MIN_VALUE;
     private int reconnectCount = 0;
+    private boolean registered = false;
     private TimerTask reconnectTask = null;
     private final List<IRCAction> onJoin;
 
@@ -416,13 +429,17 @@ public class IRCLink {
         // Work out the earliest time the next reconnect can be processed.
         long reconnectTime =  lastReconnect + RECONNECT_BACKOFF[Math.min(reconnectCount, RECONNECT_BACKOFF.length -1)];
         if (now > reconnectTime) {
-            tryConnect();
+            plugin.getReconnectTimer().schedule(reconnectTask = new TimerTask() {
+                @Override public void run() {
+                    tryConnect();
+                }
+            }, 0);
         } else {
             if (reconnectTask != null) {
                 reconnectTask.cancel();
                 reconnectTask = null;
             }
-            plugin.getReconnectTimer().schedule(new TimerTask() {
+            plugin.getReconnectTimer().schedule(reconnectTask = new TimerTask() {
                 @Override
                 public void run() {
                     tryConnect();
@@ -431,7 +448,7 @@ public class IRCLink {
         }
     }
 
-    private synchronized void connect() throws IOException {
+    private void connect() throws IOException {
         lastReconnect = System.currentTimeMillis();
         if (useSsl) {
             ircConnection = new SSLIRCConnection(host, port, port, password, nick, username, realmname);
@@ -471,6 +488,7 @@ public class IRCLink {
                 ircConnection = null;
             }
             joinedChannels.clear();
+            registered = false;
         }
     }
 
