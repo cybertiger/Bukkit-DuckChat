@@ -23,6 +23,18 @@ useIPv4: true
 # Address to use for multicast networking
 bindAddress: 127.0.0.1
 
+# Notify players about servers joining
+notifyServerJoin: true
+
+# Notify players about servers leaving
+notifyServerLeave: true
+
+# Notify players about players joining
+notifyPlayerJoin: true
+
+# Notify players about players leaving
+notifyPlayerLeave: true
+
 # Shortcuts for accessing channels.
 # Include a space in the shortcut if you wish it to require a space.
 shortcuts:

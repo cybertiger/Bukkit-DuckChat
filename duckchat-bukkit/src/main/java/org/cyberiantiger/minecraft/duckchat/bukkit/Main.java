@@ -121,6 +121,10 @@ public class Main extends JavaPlugin implements Listener {
         return config.getShortcuts();
     }
 
+    public Config getConfiguration() {
+        return config;
+    }
+
     private void connect() throws Exception {
         // XXX: Setting stuff globally is bad
         System.setProperty("java.net.preferIPv4Stack", String.valueOf(config.isUseIPv4()));

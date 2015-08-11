@@ -18,6 +18,10 @@ public class Config {
     private String network = null;
     private String defaultChannel = "global";
     private boolean useIPv4 = true;
+    private boolean notifyServerJoin = true;
+    private boolean notifyServerLeave = true;
+    private boolean notifyPlayerJoin = true;
+    private boolean notifyPlayerLeave = true;
     private String bindAddress = "127.0.0.1";
     private Map<String,String> shortcuts = new HashMap<String,String>();
 
@@ -57,5 +61,21 @@ public class Config {
 
     public Map<String,String> getShortcuts() {
         return shortcuts;
+    }
+
+    public boolean isNotifyServerJoin() {
+        return notifyServerJoin;
+    }
+
+    public boolean isNotifyServerLeave() {
+        return notifyServerLeave;
+    }
+
+    public boolean isNotifyPlayerJoin() {
+        return notifyPlayerJoin;
+    }
+
+    public boolean isNotifyPlayerLeave() {
+        return notifyPlayerLeave;
     }
 }

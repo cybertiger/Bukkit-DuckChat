@@ -246,12 +246,16 @@ public class StateManager {
         for (Map.Entry<Address,String> e : removed.entrySet()) {
             ServerLeaveEvent event = new ServerLeaveEvent(e.getKey(), e.getValue());
             plugin.getServer().getPluginManager().callEvent(event);
-            plugin.getCommandSenderManager().broadcast(plugin.translate("server.leave", e.getValue()));
+            if (plugin.getConfiguration().isNotifyServerLeave()) {
+                plugin.getCommandSenderManager().broadcast(plugin.translate("server.leave", e.getValue()));
+            }
         }
         for (Map.Entry<Address,String> e : added.entrySet()) {
             ServerJoinEvent event = new ServerJoinEvent(e.getKey(), e.getValue());
             plugin.getServer().getPluginManager().callEvent(event);
-            plugin.getCommandSenderManager().broadcast(plugin.translate("server.join", e.getValue()));
+            if (plugin.getConfiguration().isNotifyServerJoin()) {
+                plugin.getCommandSenderManager().broadcast(plugin.translate("server.join", e.getValue()));
+            }
         }
     }
 
