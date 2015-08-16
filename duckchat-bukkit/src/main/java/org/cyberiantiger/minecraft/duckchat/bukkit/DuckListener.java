@@ -41,7 +41,9 @@ public class DuckListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent e) {
         plugin.sendMemberCreate(e.getPlayer());
-        e.setJoinMessage(null);
+        if (plugin.getConfiguration().isNotifyPlayerJoin()) {
+            e.setJoinMessage(null);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -63,10 +65,12 @@ public class DuckListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(PlayerQuitEvent e) {
         plugin.sendMemberDelete(e.getPlayer());
-        e.setQuitMessage(null);
+        if (plugin.getConfiguration().isNotifyPlayerLeave()) {
+            e.setQuitMessage(null);
+        }
     }
 
     @EventHandler
