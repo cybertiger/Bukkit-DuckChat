@@ -15,6 +15,10 @@ public class ChannelConfig {
     private String messageFormat = "[%1$s %6$s] %8$s";
     private String actionFormat = "[%1$s] %6$s %8$s";
     private String permission = null;
+    private long spamWindow = -1L;
+    private int spamThreshold = -1;
+    private long repeatWindow = -1L;
+    private int repeatThreshold = -1;
 
     public boolean isOwned() {
         return owned;
@@ -38,5 +42,21 @@ public class ChannelConfig {
 
     public String getPermission() {
         return permission;
+    }
+
+    public long getSpamWindow() {
+        return spamWindow;
+    }
+
+    public int getSpamThreshold() {
+        return spamThreshold;
+    }
+
+    public long getRepeatWindow() {
+        return repeatWindow;
+    }
+
+    public int getRepeatThreshold() {
+        return repeatThreshold;
     }
 }

@@ -1,4 +1,6 @@
 chat.nochannel: 'Your current channel is invalid.'
+chat.spam: 'Spam limit exceeded, talk slower.'
+chat.repeat: 'Repeat limit exceeded, repeat yourself less.'
 
 channels.header: '====== Channels ======'
 channels.channel: '%s'

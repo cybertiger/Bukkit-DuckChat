@@ -28,8 +28,29 @@ commands:
             - broadcast
             - bc
             - rexec
-# Commented out because Bukkit permissions / Dinner perms are broken and cause lag.
 permissions:
+        duckchat.*:
+                default: op
+                description: All duckchat permissions.
+                children:
+                        duckchat.channels: true
+                        duckchat.channel: true
+                        duckchat.join: true
+                        duckchat.part: true
+                        duckchat.me: true
+                        duckchat.message: true
+                        duckchat.reply: true
+                        duckchat.reload: true
+                        duckchat.say: true
+                        duckchat.chat.color: true
+                        duckchat.chat.format: true
+                        duckchat.msg.color: true
+                        duckchat.msg.format: true
+                        duckchat.broadcast: true
+                        duckchat.broadcast.color: true
+                        duckchat.broadcast.format: true
+                        duckchat.rexec: true
+                        duckchat.spam.bypass: true
         duckchat.channels:
                 default: true
                 description: Allow usage of the channels command.
@@ -81,3 +102,6 @@ permissions:
         duckchat.rexec:
                 default: op
                 description: Allow usage of the rexec command to execute commands on a remote server as console.
+        duckchat.spam.bypass:
+                default: op
+                description: Allows bypassing of spam channel spam protection limits.

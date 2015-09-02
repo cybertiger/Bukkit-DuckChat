@@ -63,7 +63,14 @@ channels:
                 messageFormat: '[%1$s %6$s] %8$s'
                 actionFormat: '[%1$s] %6$s %8$s'
                 globalAutoJoin: true
+# Optional per channel spam configuration below.
+# Limits channel members to 4 messages per 10 seconds.
+#                spamWindow: 10000
+#                spamThreshold: 4
 #                permission: some.permission
+# Limits channel members to 3 repeated messages per 60 seconds.
+#                repeatWindow: 60000
+#                repeatThreshold: 3
 # Uncomment and rename this for a locally owned channel
 #        local:
 #                owned: true

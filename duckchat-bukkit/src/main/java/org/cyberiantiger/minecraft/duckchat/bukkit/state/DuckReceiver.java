@@ -60,11 +60,11 @@ public class DuckReceiver extends ReceiverAdapter {
                     break;
                 case CHANNEL_CREATE:
                     ChannelCreateData channelCreateData = (ChannelCreateData) data;
-                    state.onChannelCreate(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission());
+                    state.onChannelCreate(channelCreateData.getOwner(), channelCreateData.getName(), channelCreateData.getMessageFormat(), channelCreateData.getActionFormat(), channelCreateData.getFlags(), channelCreateData.getPermission(), channelCreateData.getSpamWindow(), channelCreateData.getSpamThreshold(), channelCreateData.getRepeatWindow(), channelCreateData.getRepeatThreshold());
                     break;
                 case CHANNEL_UPDATE:
                     ChannelUpdateData channelModifyData = (ChannelUpdateData) data;
-                    state.onChannelUpdate(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission());
+                    state.onChannelUpdate(channelModifyData.getName(), channelModifyData.getMessageFormat(), channelModifyData.getActionFormat(), channelModifyData.getFlags(), channelModifyData.getPermission(), channelModifyData.getSpamWindow(), channelModifyData.getSpamThreshold(), channelModifyData.getRepeatWindow(), channelModifyData.getRepeatThreshold());
                     break;
                 case CHANNEL_DELETE:
                     ChannelDeleteData channelDeleteData = (ChannelDeleteData) data;

@@ -60,11 +60,11 @@ public class StateManager {
                 if (chatChannel.isAutoJoin(m)) {
                     // XXX: Should not call out with lock held.
                     
-                    if (chatChannel.getPermission() == null) {
+                    if (chatChannel.getMetadata().getPermission() == null) {
                         plugin.sendJoinChannel(chatChannel.getName(), m.getIdentifier());
                     } else {
                         final String channelName = chatChannel.getName();
-                        final String permission = chatChannel.getPermission();
+                        final String permission = chatChannel.getMetadata().getPermission();
                         final String identifier = m.getIdentifier();
                         actions.add(new Runnable() {
                             @Override
@@ -88,11 +88,11 @@ public class StateManager {
             for (ChatChannel chatChannel : channels.values()) {
                 if (chatChannel.isAutoJoin(m)) {
                     // XXX: Should not call out with lock held.
-                    if (chatChannel.getPermission() == null) {
+                    if (chatChannel.getMetadata().getPermission() == null) {
                         plugin.sendJoinChannel(chatChannel.getName(), m.getIdentifier());
                     } else {
                         final String channelName = chatChannel.getName();
-                        final String permission = chatChannel.getPermission();
+                        final String permission = chatChannel.getMetadata().getPermission();
                         final String identifier = m.getIdentifier();
                         actions.add(new Runnable() {
                             @Override
@@ -341,19 +341,19 @@ public class StateManager {
         }
     }
 
-    void onChannelCreate(Address owner, String name, String messageFormat, String actionFormat, BitSet flags, final String permission) {
+    void onChannelCreate(Address owner, String name, String messageFormat, String actionFormat, BitSet flags, final String permission, long spamWindow, int spamThreshold, long repeatWindow, int repeatThreshold) {
         boolean update;
         List<Runnable> actions = null;
         synchronized (LOCK) {
             update = channels.containsKey(name);
             if (!update) {
-                ChatChannel chatChannel = new ChatChannel(owner, name, messageFormat, actionFormat, flags, permission);
+                ChatChannel chatChannel = new ChatChannel(owner, name, new ChatChannelMetadata(messageFormat, actionFormat, flags, permission, spamWindow, spamThreshold, repeatWindow, repeatThreshold));
                 channels.put(name, chatChannel);
                 actions = performAutoJoins(chatChannel);
             }
         }
         if (update) {
-            onChannelUpdate(name, messageFormat, actionFormat, flags, permission);
+            onChannelUpdate(name, messageFormat, actionFormat, flags, permission, spamWindow, spamThreshold, repeatWindow, repeatThreshold);
         }
         if (actions != null) {
             for (Runnable r : actions) {
@@ -362,17 +362,14 @@ public class StateManager {
         }
     }
 
-    void onChannelUpdate(String name, String messageFormat, String actionFormat, BitSet flags, final String permission) {
+    void onChannelUpdate(String name, String messageFormat, String actionFormat, BitSet flags, final String permission, long spamWindow, int spamThreshold, long repeatWindow, int repeatThreshold) {
         synchronized (LOCK) {
             if (!channels.containsKey(name)) {
                 plugin.getLogger().log(Level.WARNING, "Tried to modify non existant channel: {0}", name);
                 return;
             }
             ChatChannel chatChannel = channels.get(name);
-            chatChannel.setMessageFormat(messageFormat);
-            chatChannel.setActionFormat(actionFormat);
-            chatChannel.setFlags(flags);
-            chatChannel.setPermission(permission);
+            chatChannel.setMetadata(new ChatChannelMetadata(messageFormat, actionFormat, flags, permission, spamWindow, spamThreshold, repeatWindow, repeatThreshold));
         }
     }
 
@@ -543,7 +540,7 @@ public class StateManager {
         List<String> ret = new ArrayList<String>();
         synchronized (LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
-                String permission = chatChannel.getPermission();
+                String permission = chatChannel.getMetadata().getPermission();
                 if (permission != null) {
                     channelPermissions.put(chatChannel.getName(), permission);
                     continue;
@@ -564,7 +561,7 @@ public class StateManager {
         List<String> ret = new ArrayList<String>();
         synchronized (LOCK) {
             for (ChatChannel chatChannel : channels.values()) {
-                String permission = chatChannel.getPermission();
+                String permission = chatChannel.getMetadata().getPermission();
                 if (permission != null) {
                     channelPermissions.put(chatChannel.getName(), permission);
                     continue;
@@ -582,6 +579,13 @@ public class StateManager {
             }
         }
         return ret;
+    }
+
+    public ChatChannelMetadata getChannelMetadata(String channelName) {
+        synchronized (LOCK) {
+            ChatChannel channel = channels.get(channelName);
+            return channel == null ? null : channel.getMetadata();
+        }
     }
 
     public Address getServerAddress(String nodename) {
@@ -645,20 +649,6 @@ public class StateManager {
     }
     public boolean isChannelMember(String identifier, String channelName) {
         return getChannels(identifier).contains(channelName);
-    }
-
-    public String getChannelActionFormat(String channelName) {
-        synchronized(LOCK) {
-            ChatChannel channel = channels.get(channelName);
-            return channel == null ? null : channel.getActionFormat();
-        }
-    }
-
-    public String getChannelMessageFormat(String channelName) {
-        synchronized(LOCK) {
-            ChatChannel channel = channels.get(channelName);
-            return channel == null ? null : channel.getMessageFormat();
-        }
     }
 
     public Address getMemberAddress(String to) {

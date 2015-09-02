@@ -63,6 +63,7 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.message.Data;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.MessageData;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.PluginMessageData;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.ServerCreateData;
+import org.cyberiantiger.minecraft.duckchat.bukkit.state.ChatChannelMetadata;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.StateManager;
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -83,6 +84,7 @@ public class Main extends JavaPlugin implements Listener {
     private final StateManager state = new StateManager(this);
     private final CommandSenderManager commandSenderManager = new CommandSenderManager(this);
     private final AtomicReference<PlayerTitles> playerTitles = new AtomicReference<PlayerTitles>(PlayerTitles.DEFAULT);
+    private final SpamManager spamManager = new SpamManager();
 
     private Config config;
     private Channel channel;
@@ -170,7 +172,7 @@ public class Main extends JavaPlugin implements Listener {
             String permission = channelConfig.getPermission();
             flags.set(ChatChannel.FLAG_LOCAL_AUTO_JOIN, channelConfig.isLocalAutoJoin());
             flags.set(ChatChannel.FLAG_GLOBAL_AUTO_JOIN, channelConfig.isGlobalAutoJoin());
-            sendData(new ChannelCreateData(addr, name, messageFormat, actionFormat, flags, permission));
+            sendData(new ChannelCreateData(addr, name, messageFormat, actionFormat, flags, permission, channelConfig.getSpamWindow(), channelConfig.getSpamThreshold(), channelConfig.getRepeatWindow(), channelConfig.getRepeatThreshold()));
         }
         
     }
@@ -491,7 +493,23 @@ public class Main extends JavaPlugin implements Listener {
             getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
             return;
         }
-        format = getState().getChannelActionFormat(channelName);
+        ChatChannelMetadata metadata = getState().getChannelMetadata(channelName);
+        if (metadata == null) {
+            getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
+            return;
+        }
+        if (!sender.hasPermission("duckchat.spam.bypass")) {
+            SpamManager.SpamResult result = spamManager.allowMessage(sender, true, channelName, metadata, action);
+            switch (result) {
+                case SPAM:
+                    getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
+                    return;
+                case REPEAT:
+                    getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
+                    return;
+            }
+        }
+        format = metadata.getActionFormat();
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
         boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");
         action = formatColors(action, allowColor, allowFormat);
@@ -523,10 +541,26 @@ public class Main extends JavaPlugin implements Listener {
             getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
             return;
         }
+        ChatChannelMetadata metadata = getState().getChannelMetadata(channelName);
+        if (metadata == null) {
+            getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
+            return;
+        }
+        if (!sender.hasPermission("duckchat.spam.bypass")) {
+            SpamManager.SpamResult result = spamManager.allowMessage(sender, false, channelName, metadata, message);
+            switch (result) {
+                case SPAM:
+                    getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
+                    return;
+                case REPEAT:
+                    getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
+                    return;
+            }
+        }
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
         boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");
         message = formatColors(message, allowColor, allowFormat);
-        format = getState().getChannelMessageFormat(channelName);
+        format = metadata.getMessageFormat();
         message = String.format(
                 format,
                 channelName,

@@ -1,8 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.cyberiantiger.minecraft.duckchat.bukkit.message;
+package org.cyberiantiger.minecraft.duckchat.bukkit.state;
 
 import java.util.BitSet;
 
@@ -10,9 +11,8 @@ import java.util.BitSet;
  *
  * @author antony
  */
-public class ChannelUpdateData extends Data {
+public class ChatChannelMetadata {
 
-    private final String name;
     private final String messageFormat;
     private final String actionFormat;
     private final BitSet flags;
@@ -22,8 +22,8 @@ public class ChannelUpdateData extends Data {
     private final long repeatWindow;
     private final int repeatThreshold;
 
-    public ChannelUpdateData(String name, String messageFormat, String actionFormat, BitSet flags, String permission, long spamWindow, int spamThreshold, long repeatWindow, int repeatThreshold) {
-        this.name = name;
+
+    public ChatChannelMetadata(String messageFormat, String actionFormat, BitSet flags, String permission, long spamWindow, int spamThreshold, long repeatWindow, int repeatThreshold) {
         this.messageFormat = messageFormat;
         this.actionFormat = actionFormat;
         this.flags = flags;
@@ -32,10 +32,6 @@ public class ChannelUpdateData extends Data {
         this.spamThreshold = spamThreshold;
         this.repeatWindow = repeatWindow;
         this.repeatThreshold = repeatThreshold;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String getMessageFormat() {
@@ -71,12 +67,7 @@ public class ChannelUpdateData extends Data {
     }
 
     @Override
-    public DataType getType() {
-        return DataType.CHANNEL_UPDATE;
-    }
-
-    @Override
     public String toString() {
-        return "ChannelUpdateData{" + "name=" + name + ", messageFormat=" + messageFormat + ", actionFormat=" + actionFormat + ", flags=" + flags + ", permission=" + permission + ", spamWindow=" + spamWindow + ", spamThreshold=" + spamThreshold + ", repeatWindow=" + repeatWindow + ", repeatThreshold=" + repeatThreshold + '}';
+        return "ChatChannelMetadata{" + "messageFormat=" + messageFormat + ", actionFormat=" + actionFormat + ", flags=" + flags + ", permission=" + permission + ", spamWindow=" + spamWindow + ", spamThreshold=" + spamThreshold + ", repeatWindow=" + repeatWindow + ", repeatThreshold=" + repeatThreshold + '}';
     }
 }

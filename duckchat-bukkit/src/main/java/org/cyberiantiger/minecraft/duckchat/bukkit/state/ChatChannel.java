@@ -21,19 +21,13 @@ public class ChatChannel implements Serializable {
 
     private final Address owner;
     private final String name;
-    private String messageFormat;
-    private String actionFormat;
-    private BitSet flags;
-    private String permission;
     private final Map<String, Member> members = new HashMap<String, Member>();
+    private ChatChannelMetadata metadata;
 
-    public ChatChannel(Address owner, String name, String messageFormat, String actionFormat, BitSet flags, String permission) {
+    public ChatChannel(Address owner, String name, ChatChannelMetadata metadata) {
         this.owner = owner;
         this.name = name;
-        this.messageFormat = messageFormat;
-        this.actionFormat = actionFormat;
-        this.flags = flags;
-        this.permission = permission;
+        this.metadata = metadata;
     }
 
     public Address getOwner() {
@@ -44,15 +38,9 @@ public class ChatChannel implements Serializable {
         return name;
     }
 
-    public String getMessageFormat() {
-        return messageFormat;
-    }
-
-    public String getActionFormat() {
-        return actionFormat;
-    }
 
     public boolean isAutoJoin(Member member) {
+        BitSet flags = metadata.getFlags();
         return (member.getAddress().equals(owner) && flags.get(FLAG_LOCAL_AUTO_JOIN)) ||
                 flags.get(FLAG_GLOBAL_AUTO_JOIN);
     }
@@ -69,32 +57,21 @@ public class ChatChannel implements Serializable {
         return members.values();
     }
 
-    public void setMessageFormat(String messageFormat) {
-        this.messageFormat = messageFormat;
-    }
-
-    public void setActionFormat(String actionFormat) {
-        this.actionFormat = actionFormat;
-    }
-
-    public void setFlags(BitSet flags) {
-        this.flags = flags;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
 
     boolean isMember(String identifier) {
         return members.containsKey(identifier);
     }
 
+    public ChatChannelMetadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(ChatChannelMetadata metadata) {
+        this.metadata = metadata;
+    }
+
     @Override
     public String toString() {
-        return "ChatChannel{" + "owner=" + owner + ", name=" + name + ", messageFormat=" + messageFormat + ", actionFormat=" + actionFormat + ", flags=" + flags + ", permission=" + permission + ", members=" + members + '}';
+        return "ChatChannel{" + "owner=" + owner + ", name=" + name + ", members=" + members + ", metadata=" + metadata + '}';
     }
 }
