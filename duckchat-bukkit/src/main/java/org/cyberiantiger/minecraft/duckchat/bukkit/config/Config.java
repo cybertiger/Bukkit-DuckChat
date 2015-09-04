@@ -4,6 +4,7 @@
  */
 package org.cyberiantiger.minecraft.duckchat.bukkit.config;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,8 @@ public class Config {
     private boolean notifyPlayerJoin = true;
     private boolean notifyPlayerLeave = true;
     private String bindAddress = "127.0.0.1";
-    private Map<String,String> shortcuts = new HashMap<String,String>();
+    private Map<String,String> shortcuts = null;
+    private Map<String,ChannelConfig> channels = null;
 
     public boolean isUseIPv4() {
         return useIPv4;
@@ -33,7 +35,6 @@ public class Config {
         return bindAddress;
     }
 
-    private Map<String,ChannelConfig> channels = new HashMap<String,ChannelConfig>();
 
     public String getClusterName() {
         return clusterName;
@@ -52,7 +53,7 @@ public class Config {
     }
 
     public Map<String,ChannelConfig> getChannels() {
-        return channels;
+        return channels == null ? Collections.<String,ChannelConfig>emptyMap() : channels;
     }
 
     public String getDefaultChannel() {
@@ -60,7 +61,7 @@ public class Config {
     }
 
     public Map<String,String> getShortcuts() {
-        return shortcuts;
+        return shortcuts == null ? Collections.<String,String>emptyMap() : shortcuts;
     }
 
     public boolean isNotifyServerJoin() {
