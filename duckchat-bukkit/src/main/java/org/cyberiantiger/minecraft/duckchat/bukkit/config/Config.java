@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class Config {
     private String clusterName = "duckchat";
-    private String nodeName = null;
+    private String nodename = null;
     private boolean useUUIDs = true;
     private String network = null;
     private String defaultChannel = "global";
@@ -40,7 +40,7 @@ public class Config {
     }
 
     public String getNodeName() {
-        return nodeName;
+        return nodename;
     }
 
     public boolean isUseUUIDs() {

@@ -76,7 +76,7 @@ public class SpamManager {
                 String message = chatMessage.getMessage();
                 int count = 0;
                 for (ChatMessage msg : repeatHistory) {
-                    if (message.equalsIgnoreCase(chatMessage.getMessage())) 
+                    if (message.equalsIgnoreCase(msg.getMessage())) 
                         count++;
                 }
                 if (count >= repeatThreshold) {
