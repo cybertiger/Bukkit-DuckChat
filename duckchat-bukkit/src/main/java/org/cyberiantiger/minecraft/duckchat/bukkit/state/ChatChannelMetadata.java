@@ -6,12 +6,13 @@
 package org.cyberiantiger.minecraft.duckchat.bukkit.state;
 
 import java.util.BitSet;
+import java.io.Serializable;
 
 /**
  *
  * @author antony
  */
-public class ChatChannelMetadata {
+public class ChatChannelMetadata implements Serializable {
 
     private final String messageFormat;
     private final String actionFormat;
