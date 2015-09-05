@@ -5,7 +5,6 @@
 package org.cyberiantiger.minecraft.duckchat.bukkit.config;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**

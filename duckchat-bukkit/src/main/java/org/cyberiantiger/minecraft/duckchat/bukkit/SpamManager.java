@@ -28,6 +28,8 @@ public class SpamManager {
     private final Map<CommandSender, PlayerLimiter> limiters = new WeakHashMap<CommandSender, PlayerLimiter>();
 
     public synchronized  SpamResult allowMessage(CommandSender player, boolean action, String channelName, ChatChannelMetadata channel, String message) {
+        if (player.hasPermission("duckchat.spam.bypass"))
+            return SpamResult.ALLOW;
         PlayerLimiter limiter = limiters.get(player);
         if (limiter == null) {
             limiter = new PlayerLimiter();

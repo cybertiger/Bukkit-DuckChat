@@ -498,16 +498,14 @@ public class Main extends JavaPlugin implements Listener {
             getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
             return;
         }
-        if (!sender.hasPermission("duckchat.spam.bypass")) {
-            SpamManager.SpamResult result = spamManager.allowMessage(sender, true, channelName, metadata, action);
-            switch (result) {
-                case SPAM:
-                    getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
-                    return;
-                case REPEAT:
-                    getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
-                    return;
-            }
+        SpamManager.SpamResult result = spamManager.allowMessage(sender, true, channelName, metadata, action);
+        switch (result) {
+            case SPAM:
+                getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
+                return;
+            case REPEAT:
+                getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
+                return;
         }
         format = metadata.getActionFormat();
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
@@ -546,16 +544,14 @@ public class Main extends JavaPlugin implements Listener {
             getCommandSenderManager().sendMessage(sender, translate("chat.nochannel"));
             return;
         }
-        if (!sender.hasPermission("duckchat.spam.bypass")) {
-            SpamManager.SpamResult result = spamManager.allowMessage(sender, false, channelName, metadata, message);
-            switch (result) {
-                case SPAM:
-                    getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
-                    return;
-                case REPEAT:
-                    getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
-                    return;
-            }
+        SpamManager.SpamResult result = spamManager.allowMessage(sender, false, channelName, metadata, message);
+        switch (result) {
+            case SPAM:
+                getCommandSenderManager().sendMessage(sender, translate("chat.spam"));
+                return;
+            case REPEAT:
+                getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
+                return;
         }
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
         boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");
