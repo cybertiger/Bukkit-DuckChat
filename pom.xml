@@ -46,16 +46,18 @@
   </build>
   <repositories>
     <repository>
-        <id>spigotmc-snapshots</id>
-        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
-      </repository>
+      <id>spigotmc-snapshots</id>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+    </repository>
+    <!--
     <repository>
       <id>cyberiantiger.repo</id>
       <url>http://cyberiantiger.org/maven/</url>
     </repository>
+  -->
     <!-- Vault -->
     <repository>
-      <id>hc.to</id>
+      <id>milkbowl-repo</id>
       <url>http://nexus.hc.to/content/repositories/pub_releases/</url>
     </repository>
   </repositories>

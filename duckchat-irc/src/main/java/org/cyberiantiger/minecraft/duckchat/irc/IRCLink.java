@@ -459,7 +459,7 @@ public class IRCLink {
         ircConnection.setDaemon(true);
         ircConnection.setColors(true);
         ircConnection.setPong(true);
-        ircConnection.setDebug(debug);
+        //ircConnection.setDebug(debug);
         ircConnection.setTimeout(0);
         ircConnection.addIRCEventListener(ircEventAdapter);
         ircConnection.setUncaughtExceptionHandler(
