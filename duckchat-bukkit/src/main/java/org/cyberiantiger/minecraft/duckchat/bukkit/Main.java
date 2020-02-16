@@ -131,7 +131,7 @@ public class Main extends JavaPlugin implements Listener {
         // XXX: Setting stuff globally is bad
         System.setProperty("java.net.preferIPv4Stack", String.valueOf(config.isUseIPv4()));
         System.setProperty("jgroups.bind_addr", config.getBindAddress());
-        String nodename = config.getNodeName() == null ? getServer().getServerName() : config.getNodeName();
+        String nodename = config.getNodeName() == null ? getServer().getName() : config.getNodeName();
         if (config.getNetwork() != null) {
             File networkConfig = new File(getDataFolder(), config.getNetwork());
             channel = new JChannel(networkConfig);
