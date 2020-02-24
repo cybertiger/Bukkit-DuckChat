@@ -13,6 +13,7 @@ import java.io.Serializable;
  * @author antony
  */
 public class ChatChannelMetadata implements Serializable {
+    private static final long serialVersionUID = 0L;
 
     private final String messageFormat;
     private final String actionFormat;

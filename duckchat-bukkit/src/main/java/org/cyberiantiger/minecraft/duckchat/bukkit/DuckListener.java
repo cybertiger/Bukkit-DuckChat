@@ -4,9 +4,10 @@
  */
 package org.cyberiantiger.minecraft.duckchat.bukkit;
 
-import com.google.common.base.Charsets;
-import java.nio.charset.Charset;
 import java.util.Map;
+
+import com.google.common.base.Charsets;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,7 +20,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.MemberJoinEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.MemberLeaveEvent;
 import org.cyberiantiger.minecraft.duckchat.bukkit.event.PluginMessageEvent;
-import sun.nio.cs.StandardCharsets;
 
 /**
  *

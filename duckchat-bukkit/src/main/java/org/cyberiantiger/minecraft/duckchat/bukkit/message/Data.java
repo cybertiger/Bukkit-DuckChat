@@ -11,6 +11,7 @@ import java.io.Serializable;
  * @author antony
  */
 public abstract class Data implements Serializable {
+    private static final long serialVersionUID = 0L;
 
     public abstract DataType getType();
     

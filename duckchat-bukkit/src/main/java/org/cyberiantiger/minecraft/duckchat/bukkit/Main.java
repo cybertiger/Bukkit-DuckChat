@@ -149,6 +149,7 @@ public class Main extends JavaPlugin implements Listener {
         getState().setLocalAddress(channel.getAddress());
         channel.getState(null, 0);
 
+        // サーバー起動を広告
         sendServerCreate();
         
         // Register our players.
@@ -260,10 +261,14 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        // 存在しなければデフォルト設定ファイルをコピー
         copyDefaults();
+        // 設定ファル読み込み
         loadConfig();
+        // イベントリスナー登録
         getServer().getPluginManager().registerEvents(new DuckListener(this), this);
         try {
+            // 接続
             connect();
         } catch (Exception ex) {
             getLogger().log(Level.SEVERE, "Failed to open channel", ex);
@@ -293,20 +298,25 @@ public class Main extends JavaPlugin implements Listener {
         channel = null;
     }
 
-    private Map<String, SubCommand> subcommands = new LinkedHashMap<String, SubCommand>();
+    @Override
+    public void onLoad() {
+        // NONE
+    }
+
+    private Map<String, SubCommand<Main>> subcommands = new LinkedHashMap<String, SubCommand<Main>>();
     {
-        SubCommand channelsSubCommand = new ChannelsSubCommand(this);
-        SubCommand channelSubCommand = new ChannelSubCommand(this);
-        SubCommand joinSubCommand = new JoinSubCommand(this);
-        SubCommand partSubCommand = new PartSubCommand(this);
-        SubCommand meSubCommand = new MeSubCommand(this);
-        SubCommand channelListSubCommand = new ChannelListSubCommand(this);
-        SubCommand messageSubCommand = new MessageSubCommand(this);
-        SubCommand replySubCommand = new ReplySubCommand(this);
-        SubCommand reloadSubCommand = new ReloadSubCommand(this);
-        SubCommand saySubCommand = new SaySubCommand(this);
-        SubCommand broadcastSubCommand = new BroadcastSubCommand(this);
-        SubCommand rexecSubCommand = new RexecSubCommand(this);
+        SubCommand<Main> channelsSubCommand = new ChannelsSubCommand(this);
+        SubCommand<Main> channelSubCommand = new ChannelSubCommand(this);
+        SubCommand<Main> joinSubCommand = new JoinSubCommand(this);
+        SubCommand<Main> partSubCommand = new PartSubCommand(this);
+        SubCommand<Main> meSubCommand = new MeSubCommand(this);
+        SubCommand<Main> channelListSubCommand = new ChannelListSubCommand(this);
+        SubCommand<Main> messageSubCommand = new MessageSubCommand(this);
+        SubCommand<Main> replySubCommand = new ReplySubCommand(this);
+        SubCommand<Main> reloadSubCommand = new ReloadSubCommand(this);
+        SubCommand<Main> saySubCommand = new SaySubCommand(this);
+        SubCommand<Main> broadcastSubCommand = new BroadcastSubCommand(this);
+        SubCommand<Main> rexecSubCommand = new RexecSubCommand(this);
 
         subcommands.put("channels", channelsSubCommand);
         subcommands.put("channel", channelSubCommand);
@@ -331,7 +341,7 @@ public class Main extends JavaPlugin implements Listener {
         subcommands.put("t", messageSubCommand);
     }
 
-    private void executeCommand(CommandSender sender, SubCommand cmd, String label, String[] args) {
+    private void executeCommand(CommandSender sender, SubCommand<Main> cmd, String label, String[] args) {
         try {
             cmd.onCommand(sender, args);
         } catch (SenderTypeException ex) {
@@ -348,7 +358,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         // Check for label matches.
-        for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
+        for (Map.Entry<String,SubCommand<Main>> e : subcommands.entrySet()) {
                 if(label.equalsIgnoreCase(e.getKey())) {
                     executeCommand(sender, e.getValue(), label, args);
                     return true;
@@ -356,7 +366,7 @@ public class Main extends JavaPlugin implements Listener {
         }
         // Check for second argument matches.
         if (args.length >= 1) {
-            for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
+            for (Map.Entry<String,SubCommand<Main>> e : subcommands.entrySet()) {
                 if (e.getKey().equalsIgnoreCase(args[0])) {
                     label += " " + args[0];
                     String[] newArgs = new String[args.length-1];
@@ -371,7 +381,7 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        for (Map.Entry<String,SubCommand> e : subcommands.entrySet()) {
+        for (Map.Entry<String,SubCommand<Main>> e : subcommands.entrySet()) {
             if(label.equalsIgnoreCase(e.getKey())) {
                 return e.getValue().onTabComplete(sender, args);
             } else if (args.length >= 1 && e.getKey().equalsIgnoreCase(args[0])) {
@@ -381,7 +391,7 @@ public class Main extends JavaPlugin implements Listener {
             }
         }
         if (args.length == 1) {
-            List<String> result = new ArrayList();
+            List<String> result = new ArrayList<>();
             String start = args[0].toLowerCase();
             for (String s : subcommands.keySet()) {
                 if (s.toLowerCase().startsWith(start)) {
@@ -506,6 +516,8 @@ public class Main extends JavaPlugin implements Listener {
             case REPEAT:
                 getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
                 return;
+            default:
+                break;
         }
         format = metadata.getActionFormat();
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
@@ -552,6 +564,8 @@ public class Main extends JavaPlugin implements Listener {
             case REPEAT:
                 getCommandSenderManager().sendMessage(sender, translate("chat.repeat"));
                 return;
+            default:
+                break;
         }
         boolean allowColor = getCommandSenderManager().hasPermission(sender, "duckchat.chat.color");
         boolean allowFormat = getCommandSenderManager().hasPermission(sender, "duckchat.chat.format");

@@ -32,7 +32,7 @@ public class Main extends JavaPlugin implements Listener {
 
     private IRCCommandExecutor commandExecutor;
     private org.cyberiantiger.minecraft.duckchat.bukkit.Main duckChat;
-    private final List<IRCLink> ircLinks = new ArrayList();
+    private final List<IRCLink> ircLinks = new ArrayList<>();
     private Timer reconnectTimer;
 
 

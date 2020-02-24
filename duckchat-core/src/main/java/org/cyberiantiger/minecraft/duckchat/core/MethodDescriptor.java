@@ -9,12 +9,14 @@ import java.lang.reflect.Method;
 
 /**
  * Serializable description of a method.
+ * 
  * @author antony
  */
-class MethodDescriptor implements Serializable {
+public class MethodDescriptor implements Serializable {
+    private static final long serialVersionUID = 0;
     private final String type;
     private final int methodOffset;
-    
+
     public MethodDescriptor(Method method) {
         this.type = method.getDeclaringClass().getName();
         Method[] declaredMethods = method.getDeclaringClass().getDeclaredMethods();

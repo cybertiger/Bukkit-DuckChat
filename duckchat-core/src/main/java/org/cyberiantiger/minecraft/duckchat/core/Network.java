@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.cyberiantiger.minecraft.duckchat.core.state.State;
 import org.cyberiantiger.minecraft.duckchat.core.state.State.StateProvider;
+import org.cyberiantiger.minecraft.duckchat.core.state.State.StateUpdater;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -124,7 +125,7 @@ public final class Network {
         this.node = node;
         this.debug = debug;
         this.config = config;
-        for (StateProvider p : ServiceLoader.load(StateProvider.class)) {
+        for (StateProvider<?,?> p : ServiceLoader.load(StateProvider.class)) {
             stateProviders.put(p.getStateClass(), p);
         }
         channelImpl = config == null ? new JChannel() : new JChannel(config);

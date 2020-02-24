@@ -16,6 +16,7 @@ import org.jgroups.Address;
  * @author antony
  */
 public class ChatChannel implements Serializable {
+    private static final long serialVersionUID = 0L;
     public static final int FLAG_LOCAL_AUTO_JOIN = 0;
     public static final int FLAG_GLOBAL_AUTO_JOIN = 1;
 

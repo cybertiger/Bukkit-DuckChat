@@ -9,9 +9,8 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.cyberiantiger.minecraft.duckchat.bukkit.state.ChatChannel;
 import org.cyberiantiger.minecraft.duckchat.bukkit.state.ChatChannelMetadata;
 
 /**

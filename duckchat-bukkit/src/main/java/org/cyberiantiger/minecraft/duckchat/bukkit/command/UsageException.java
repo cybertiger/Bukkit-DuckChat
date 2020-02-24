@@ -9,5 +9,5 @@ package org.cyberiantiger.minecraft.duckchat.bukkit.command;
  * @author antony
  */
 public class UsageException extends SubCommandException {
-    
+    private static final long serialVersionUID = 0L;
 }

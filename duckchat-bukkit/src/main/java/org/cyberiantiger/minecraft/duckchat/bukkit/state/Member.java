@@ -13,6 +13,7 @@ import org.jgroups.Address;
  * @author antony
  */
 public class Member implements Serializable {
+    private static final long serialVersionUID = 0L;
     
     private final Address address;
     private final String identifier;
