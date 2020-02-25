@@ -5,8 +5,8 @@
 package org.cyberiantiger.minecraft.duckchat.irc;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +70,7 @@ public class Main extends JavaPlugin implements Listener {
         try {
             Yaml configLoader = new Yaml(new CustomClassLoaderConstructor(Config.class, getClass().getClassLoader()));
             configLoader.setBeanAccess(BeanAccess.FIELD);
-            this.config = configLoader.loadAs(new FileReader(getConfigFile()), Config.class);
+            this.config = configLoader.loadAs(Files.newBufferedReader(getConfigFile().toPath()), Config.class);
             for (Map.Entry<String, String> e : config.getMessages().entrySet()) {
                 e.setValue(e.getValue().replace('&', ChatColor.COLOR_CHAR));
             }

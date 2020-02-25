@@ -12,12 +12,12 @@ import org.cyberiantiger.minecraft.duckchat.bukkit.state.ChatChannel;
 import org.cyberiantiger.minecraft.duckchat.bukkit.message.ChannelMessageData;
 import org.cyberiantiger.minecraft.duckchat.bukkit.command.SubCommand;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -231,7 +231,7 @@ public class Main extends JavaPlugin implements Listener {
         try {
             Yaml configLoader = new Yaml(new CustomClassLoaderConstructor(Config.class, getClass().getClassLoader()));
             configLoader.setBeanAccess(BeanAccess.FIELD);
-            config = configLoader.loadAs(new InputStreamReader(new BufferedInputStream(new FileInputStream(getConfigFile())), Charsets.UTF_8), Config.class);
+            config = configLoader.loadAs(Files.newBufferedReader(getConfigFile().toPath(), Charsets.UTF_8), Config.class);
         } catch (IOException|YAMLException ex) {
             getLogger().log(Level.SEVERE, "Error loading config.yml", ex);
             getLogger().severe("Your config.yml has fatal errors, using defaults.");
@@ -239,6 +239,9 @@ public class Main extends JavaPlugin implements Listener {
         this.messages.clear();
         try {
             Yaml languageLoader = new Yaml();
+            // URL->URI->Path->Readerと変換する方法があるがjarにパッケージ化して実行すると失敗する
+            // There is a way to convert from URL-> URI-> Path-> Reader, but it fails when packaged in jar and executed.
+            // Files.newBufferedReader(Paths.get(getClass().getClassLoader().getResource(LANGUAGE).toURI()));
             Map<String, String> messages = (Map<String, String>) languageLoader.load( new InputStreamReader( new BufferedInputStream( getClass().getClassLoader().getResourceAsStream(LANGUAGE)), Charsets.UTF_8));
             for (Map.Entry<String,String> e : messages.entrySet()) {
                 this.messages.put(e.getKey(), e.getValue().replace('&', ChatColor.COLOR_CHAR));
@@ -249,7 +252,7 @@ public class Main extends JavaPlugin implements Listener {
         }
         try {
             Yaml languageLoader = new Yaml();
-            Map<String, String> messages = (Map<String, String>) languageLoader.load(new InputStreamReader(new BufferedInputStream(new FileInputStream(getLanguageFile())), Charsets.UTF_8));
+            Map<String, String> messages = (Map<String, String>) languageLoader.load(Files.newBufferedReader(getLanguageFile().toPath(), Charsets.UTF_8));
             for (Map.Entry<String,String> e : messages.entrySet()) {
                 this.messages.put(e.getKey(), e.getValue().replace('&', ChatColor.COLOR_CHAR));
             }
