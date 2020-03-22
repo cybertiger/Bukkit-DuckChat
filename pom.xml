@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cyberiantiger.minecraft</groupId>
   <artifactId>duckchat-parent</artifactId>
-  <version>1.13-SNAPSHOT</version>
+  <version>1.13.1-SNAPSHOT-for-MC1.15.2</version>
   <packaging>pom</packaging>
   <modules>
     <module>duckchat-core</module>
@@ -17,6 +17,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.number>${user.name}</project.build.number>
+    <java.version.source>1.8</java.version.source>
+    <java.version.target>1.8</java.version.target>
+    <java.compiler.debug>true</java.compiler.debug>
   </properties>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -31,8 +34,10 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>${java.version.source}</source>
+          <target>${java.version.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <debug>${java.compiler.debug}</debug>
         </configuration>
       </plugin>
     </plugins>

@@ -22,3 +22,9 @@ site/javadoc/*
 */target/*
 */dependency-reduced-pom.xml
 /target/
+
+.settings/
+.vscode/
+.project
+.classpath
+.factorypath
