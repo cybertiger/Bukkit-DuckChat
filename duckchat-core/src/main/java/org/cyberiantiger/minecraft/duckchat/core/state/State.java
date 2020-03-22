@@ -11,7 +11,6 @@ import java.io.Serializable;
  * @author antony
  */
 public abstract class State implements Serializable {
-    private static final long serialVersionUID = 0L;
 
     public interface StateUpdater<T extends State> {
     }

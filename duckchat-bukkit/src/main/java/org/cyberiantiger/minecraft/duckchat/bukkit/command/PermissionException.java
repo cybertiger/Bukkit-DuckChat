@@ -9,7 +9,6 @@ package org.cyberiantiger.minecraft.duckchat.bukkit.command;
  * @author antony
  */
 public class PermissionException extends SubCommandException {
-    private static final long serialVersionUID = 0L;
 
     private final String permission;
 

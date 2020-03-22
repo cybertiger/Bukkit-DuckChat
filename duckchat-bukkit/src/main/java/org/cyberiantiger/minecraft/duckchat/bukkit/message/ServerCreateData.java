@@ -9,7 +9,6 @@ package org.cyberiantiger.minecraft.duckchat.bukkit.message;
  * @author antony
  */
 public class ServerCreateData extends Data {
-    private static final long serialVersionUID = 0L;
     private final String name;
 
     public ServerCreateData(String name) {

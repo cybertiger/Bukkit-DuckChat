@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
  * @author antony
  */
 public class MethodDescriptor implements Serializable {
-    private static final long serialVersionUID = 0;
     private final String type;
     private final int methodOffset;
 
