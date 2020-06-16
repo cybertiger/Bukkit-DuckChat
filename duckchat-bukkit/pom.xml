@@ -67,7 +67,7 @@
     <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups</artifactId>
-      <version>3.5.0.CR2</version>
+      <version>3.5.1.Final</version>
     </dependency>
 <!--
     <dependency>
