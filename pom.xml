@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.cyberiantiger.minecraft</groupId>
   <artifactId>duckchat-parent</artifactId>
-  <version>1.13.1-SNAPSHOT-for-MC1.15.2</version>
+  <version>1.13.1-SNAPSHOT-for-MC1.16.5</version>
   <packaging>pom</packaging>
   <modules>
     <module>duckchat-core</module>
@@ -50,9 +50,10 @@
     </extensions>
   </build>
   <repositories>
+    <!-- This adds the Spigot Maven repository to the build -->
     <repository>
-      <id>spigotmc-snapshots</id>
-      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+      <id>spigot-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
     <!--
     <repository>
